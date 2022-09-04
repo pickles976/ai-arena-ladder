@@ -1,0 +1,4 @@
+node -e "function alert(x){ 
+            x === 'undefined' ? console.error('undefined') : console.error(x); return; 
+         }; 
+         alert('x'); alert();"

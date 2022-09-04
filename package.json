@@ -1,0 +1,8 @@
+{
+  "type": "module",
+  "dependencies": {
+    "ai-arena": "^1.0.7",
+    "http-server": "^14.1.1",
+    "ws": "^8.8.1"
+  }
+}
