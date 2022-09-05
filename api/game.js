@@ -1,16 +1,21 @@
-import { runGame, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, getGameState, getGameStateString} from "ai-arena"
+import { runGame, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, getGameStateString, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode} from "ai-arena"
+import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "./aiControls.js";
 
 global.alert = function(x){ 
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
 }; 
 
-let TICKS_PER_FRAME = 1
+let TICKS_PER_FRAME = 32
 
 console.log(testPackage())
 setTicksPerFrame(TICKS_PER_FRAME)
 setFramerate(30)
+setShipStartCode(0,ShipStart)
+setShipUpdateCode(0,ShipUpdate)
+setBaseStartCode(0,BaseStart)
+setBaseUpdateCode(0,BaseUpdate)
 setGraphicsEnabled(false)
-let i = 0
+let i = 1
 
 // const WebSocket = require('ws');
 
@@ -56,13 +61,17 @@ function sendGameState(){
 
 console.log("wss up");
 
+let start = performance.now()
+
 // send the game state back every second
 var callback = function(){
 
     i++
-    console.log(i)
+    // console.log(i)
+    console.log(performance.now() - start)
+    start = performance.now()
 
-    if (i % TICKS_PER_FRAME === 0){
+    if (i % (TICKS_PER_FRAME) === 0){
         console.log("Sending game state to client")
         sendGameState()
     }
