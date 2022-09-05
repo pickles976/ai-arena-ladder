@@ -3,8 +3,9 @@
     const ws = await connectToServer();    
 
     ws.onmessage = (webSocketMessage) => {
-        const messageBody = JSON.parse(webSocketMessage.data);
-        console.log(messageBody)
+        const messageBody = webSocketMessage.data;
+        // console.log(messageBody)
+        loadGameStateFromString(messageBody)
     };        
         
     async function connectToServer() {    
@@ -20,3 +21,11 @@
     }
 
 })();
+
+import {setCanvas, testPackage, runGame, loadGameStateFromString, setTicksPerFrame, setFramerate} from './node_modules/ai-arena/dist/index.js'
+
+console.log(testPackage())
+setCanvas(document.getElementById("game-canvas"))
+setTicksPerFrame(1)
+setFramerate(30)
+runGame()

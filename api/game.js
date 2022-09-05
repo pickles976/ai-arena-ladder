@@ -1,11 +1,13 @@
-import {runGame, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, getGameState} from "ai-arena"
+import { runGame, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, getGameState, getGameStateString} from "ai-arena"
 
 global.alert = function(x){ 
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
 }; 
 
+let TICKS_PER_FRAME = 1
+
 console.log(testPackage())
-setTicksPerFrame(1)
+setTicksPerFrame(TICKS_PER_FRAME)
 setFramerate(30)
 setGraphicsEnabled(false)
 let i = 0
@@ -45,7 +47,7 @@ function uuidv4() {
 
 function sendGameState(){
 
-    const gameState = JSON.stringify(getGameState());
+    const gameState = getGameStateString();
 
     [...clients.keys()].forEach((client) => {
         client.send(gameState);
@@ -60,7 +62,7 @@ var callback = function(){
     i++
     console.log(i)
 
-    if (i % 30 === 0){
+    if (i % TICKS_PER_FRAME === 0){
         console.log("Sending game state to client")
         sendGameState()
     }
