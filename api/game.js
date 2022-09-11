@@ -1,4 +1,4 @@
-import { runGame, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode} from "ai-arena"
+import { runGame, getWinner, onGameEnd, setFramerate, loadGameState, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame} from "ai-arena"
 import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "./aiControls.js";
 
 global.alert = function(x){ 
@@ -21,6 +21,7 @@ let i = 1
 // const WebSocket = require('ws');
 
 import {WebSocketServer} from "ws"
+
 
 const wss = new WebSocketServer({ port: 7071 });
 const clients = new Map();
@@ -75,6 +76,7 @@ function sendPackets(num){
       packet = getScorePacket
       break;
     case 2: 
+      packet = (() => [getWinner()])
       break;
   }
 
@@ -107,7 +109,13 @@ var callback = function(){
     }
 }
 
+var gameEndCallback = function(){
+  sendPackets(2)
+  stopGame()
+}
+
 setPhysicsCallbacks(callback)
+onGameEnd(gameEndCallback)
 runGame()
 
-setTimeout(()=>console.log(i),30000)
+setTimeout(gameEndCallback,10000)

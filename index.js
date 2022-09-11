@@ -18,6 +18,7 @@
                     console.log(getGameInfo())
                     break;
                 case 2:
+                    console.log(floatArray)
                     break;
             }
         })()
