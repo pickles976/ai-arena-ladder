@@ -1,4 +1,4 @@
-import { runGame, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, getGameStateString, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode} from "ai-arena"
+import { runGame, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode} from "ai-arena"
 import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "./aiControls.js";
 
 global.alert = function(x){ 
@@ -8,6 +8,7 @@ global.alert = function(x){
 let TICKS_PER_FRAME = 32
 
 console.log(testPackage())
+setNode(true)
 setTicksPerFrame(TICKS_PER_FRAME)
 setFramerate(30)
 setShipStartCode(0,ShipStart)
@@ -31,6 +32,8 @@ wss.on('connection', (ws) => {
 
     clients.set(ws, metadata);
 
+    console.log('client connected!')
+
     // ws.on('message', (messageAsString) => {
     //   const message = JSON.parse(messageAsString);
     //   const metadata = clients.get(ws);
@@ -52,11 +55,34 @@ function uuidv4() {
 
 function sendGameState(){
 
-    const gameState = getGameStateString();
+    const payload = Float32Array.from([0, getGamePacket()]);
 
     [...clients.keys()].forEach((client) => {
-        client.send(gameState);
+        client.send(payload);
     });
+}
+
+// kind of hacky
+function sendPackets(num){
+
+  let packet = null
+
+  switch(num){
+    case 0:
+      packet = getGamePacket
+      break;
+    case 1:
+      packet = getScorePacket
+      break;
+    case 2: 
+      break;
+  }
+
+  const payload = Float32Array.from([num, ...packet()]);
+
+  [...clients.keys()].forEach((client) => {
+      client.send(payload);
+  });
 }
 
 console.log("wss up");
@@ -68,14 +94,20 @@ var callback = function(){
 
     i++
     // console.log(i)
-    console.log(performance.now() - start)
+    // console.log(performance.now() - start)
     start = performance.now()
 
-    if (i % (TICKS_PER_FRAME) === 0){
-        console.log("Sending game state to client")
-        sendGameState()
+    if (i % (TICKS_PER_FRAME * 2) === 0){
+      sendPackets(0)
+    }
+    
+    if (i % (TICKS_PER_FRAME * 10) === 1){
+      console.log("Sending game score to client")
+      sendPackets(1)
     }
 }
 
 setPhysicsCallbacks(callback)
 runGame()
+
+setTimeout(()=>console.log(i),30000)

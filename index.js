@@ -3,9 +3,24 @@
     const ws = await connectToServer();    
 
     ws.onmessage = (webSocketMessage) => {
-        const messageBody = webSocketMessage.data;
-        // console.log(messageBody)
-        loadGameStateFromString(messageBody)
+        const blob = webSocketMessage.data;
+        (async () => {
+            const arr = await blob.arrayBuffer()
+            let floatArray = new Float32Array(arr)
+            const i = floatArray[0]
+            floatArray = floatArray.slice(1,floatArray.length)
+            switch(i){
+                case 0:
+                    loadGamePacket(floatArray)
+                    break;
+                case 1:
+                    loadScorePacket(floatArray)
+                    console.log(getGameInfo())
+                    break;
+                case 2:
+                    break;
+            }
+        })()
     };        
         
     async function connectToServer() {    
@@ -22,7 +37,7 @@
 
 })();
 
-import {setCanvas, testPackage, runGame, loadGameStateFromString, setTicksPerFrame, setFramerate, setStreaming, setPhysicsCallbacks, setGraphicsEnabled} from './node_modules/ai-arena/dist/index.js'
+import {setCanvas, testPackage, runGame, loadGamePacket, loadScorePacket, setTicksPerFrame, setFramerate, setStreaming, setPhysicsCallbacks, setGraphicsEnabled, getGameInfo} from './node_modules/ai-arena/dist/index.js'
 
 // let start = performance.now()
 // let callback = function(){
