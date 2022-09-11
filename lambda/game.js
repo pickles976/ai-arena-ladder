@@ -1,4 +1,4 @@
-import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame} from "ai-arena"
+import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo} from "ai-arena"
 import { data } from './json.js'
 
 global.alert = function(x){ 
@@ -9,6 +9,7 @@ let TICKS_PER_FRAME = data.TICKS_PER_FRAME
 let FRAMERATE = data.FRAMERATE
 
 console.log(testPackage())
+console.log(data)
 
 setNode(true)
 setTicksPerFrame(TICKS_PER_FRAME)
@@ -31,6 +32,7 @@ var callback = function(){
     if (i > 3000){
         console.log('success')
         console.log(performance.now() - start)
+        console.log(getGameInfo())
         stopGame()
     }
 }
