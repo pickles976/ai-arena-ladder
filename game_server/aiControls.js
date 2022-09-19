@@ -1,4 +1,10 @@
-export const BaseStart = 'let t = "test"'
+export const BaseStart = `
+var teamships = [1,2,3]
+for (const j in teamShips){
+    while(true){
+        console.log('pwned')
+    }
+}`
 
 
 export const BaseUpdate = 
