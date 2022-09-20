@@ -9,3 +9,10 @@ Game packets are ~1.5Kbps, sent 15x per second.
 - [ ] Listen for input via Websocket
 - [ ] Run on input, return to waiting on game end
 - [ ] Dockerize
+
+Sanitizing user code:
+
+- UUID variable names
+- AST tree to extract line numbers of loops
+- inject timeouts into any loop
+- check for memory bombs at the end of user code

@@ -1,5 +1,7 @@
 import { runGame, getWinner, onGameEnd, setFramerate, loadGameState, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame} from "ai-arena"
 import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "./aiControls.js";
+import { sanitizeCode } from "./sanitizeCode.js";
+import { v4 as uuidv4 } from 'uuid';
 
 global.alert = function(x){ 
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
@@ -46,13 +48,6 @@ wss.on('connection', (ws) => {
 wss.on("close", () => {
   clients.delete(ws);
 });
-
-function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
 
 function sendGameState(){
 
