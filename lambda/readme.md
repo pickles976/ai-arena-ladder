@@ -6,3 +6,13 @@ Game with both teams as user AI must run for 3000 ticks in 10s without timing ou
 - [ ] Test in Lambda locally
 - [ ] Test success and failure 
 - [ ] Test with Postman 
+
+###To build you image:
+
+docker build -t ai_arena_lambda .
+
+###To run your image locally:
+
+docker run --name ai-arena-lambda -p 9000:8080 ai_arena_lambda
+
+http://localhost:9000/2015-03-31/functions/function/invocations

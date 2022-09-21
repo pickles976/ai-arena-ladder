@@ -1,64 +1,62 @@
 import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo} from "ai-arena"
-import { data } from './json.js'
-import { sanitizeCode } from '../sanitizeCode.js'
+import { sanitizeCode } from './sanitizeCode.js'
 
-function success(){
-    return 'success'
+let status = 'failure'
+
+function sleep(ms) {
+    return new Promise(
+      resolve => setTimeout(resolve, ms)
+    );
+}
+  
+var gameEndCallback = function(value){
+    stopGame()
+    runGame()
 }
 
-function failure(){
-    return 'failed'
-}
+export const handler = async (event, context) => {
 
-exports.handler = async function(event,context,callback) {
-
+    console.log('Received event:', JSON.stringify(event));
     console.log(testPackage())
-    console.log(data)
 
     global.alert = function(x){ 
         x === 'undefined' ? console.error('undefined') : console.error(x); return; 
     }; 
 
-    let TICKS_PER_FRAME = data.TICKS_PER_FRAME
-    let FRAMERATE = data.FRAMERATE
+    let TICKS_PER_FRAME = event.TICKS_PER_FRAME
+    let FRAMERATE = event.FRAMERATE
 
     setNode(true)
     setTicksPerFrame(TICKS_PER_FRAME)
     setFramerate(FRAMERATE)
-    console.log(sanitizeCode(data.team0.ShipStartCode))
-    setShipStartCode(0,sanitizeCode(data.team0.ShipStartCode))
-    setShipUpdateCode(0,sanitizeCode(data.team0.ShipUpdateCode))
-    setBaseStartCode(0,sanitizeCode(data.team0.BaseStartCode))
-    setBaseUpdateCode(0,sanitizeCode(data.team0.BaseUpdateCode))
-    setShipStartCode(1,sanitizeCode(data.team1.ShipStartCode))
-    setShipUpdateCode(1,sanitizeCode(data.team1.ShipUpdateCode))
-    setBaseStartCode(1,sanitizeCode(data.team1.BaseStartCode))
-    setBaseUpdateCode(1,sanitizeCode(data.team1.BaseUpdateCode))
+    setShipStartCode(0,sanitizeCode(event.team0.ShipStartCode))
+    setShipUpdateCode(0,sanitizeCode(event.team0.ShipUpdateCode))
+    setBaseStartCode(0,sanitizeCode(event.team0.BaseStartCode))
+    setBaseUpdateCode(0,sanitizeCode(event.team0.BaseUpdateCode))
+    setShipStartCode(1,sanitizeCode(event.team1.ShipStartCode))
+    setShipUpdateCode(1,sanitizeCode(event.team1.ShipUpdateCode))
+    setBaseStartCode(1,sanitizeCode(event.team1.BaseStartCode))
+    setBaseUpdateCode(1,sanitizeCode(event.team1.BaseUpdateCode))
     setGraphicsEnabled(false)
     let i = 1
     let start = performance.now()
 
     // send the game state back every second
-    var physCallback = function(){
+    function physCallback(){
         i++
-        if (i > 1500){
-            console.log('success')
-            console.log(performance.now() - start)
-            console.log(getGameInfo())
+        if (i > 300){
+            console.log('Success!!')
+            console.log(`Ran ${i} steps in: ${performance.now() - start}ms`)
             stopGame()
-            success()
+            status = "success"
         }
-    }
-
-    var gameEndCallback = function(value){
-        stopGame()
-        runGame()
     }
 
     setPhysicsCallbacks(physCallback)
     onGameEnd(gameEndCallback)
     runGame()
-
-    setTimeout(failure,5000)
+    
+    await sleep(1000)
+    return status
 
 }

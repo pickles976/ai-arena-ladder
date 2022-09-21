@@ -1,4 +1,4 @@
-export const BaseStart = `while(true){console.log("pwned")}`
+export const BaseStart = ``
 
 
 export const BaseUpdate = 
@@ -39,7 +39,6 @@ ship.arr = []
 ship.shootCooldown = 10
 ship.shootTimer = 0
 console.log("Ship start!")
-ship.s = 0
 `
 
 export const ShipUpdate = 
