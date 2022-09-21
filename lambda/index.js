@@ -14,9 +14,32 @@ var gameEndCallback = function(value){
     runGame()
 }
 
-export const handler = async (event, context) => {
+const response_success = {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: 'ok'
+    }),
+};
 
-    console.log('Received event:', JSON.stringify(event));
+const response_error = {
+  statusCode: 400,
+  body: JSON.stringify({
+      message: 'error'
+  }),
+};
+
+export const handler = (event, context, callback) => {
+
+    context.callbackWaitsForEmptyEventLoop = false
+
+    if (event.body){
+        console.log(`Raw event: ${event}`)
+        console.log(`Event body: ${event.body}`)
+        event = event.body
+    }
+
+    console.log(`Received event: ${event}`);
+
     console.log(testPackage())
 
     global.alert = function(x){ 
@@ -29,14 +52,14 @@ export const handler = async (event, context) => {
     setNode(true)
     setTicksPerFrame(TICKS_PER_FRAME)
     setFramerate(FRAMERATE)
-    setShipStartCode(0,sanitizeCode(event.team0.ShipStartCode))
-    setShipUpdateCode(0,sanitizeCode(event.team0.ShipUpdateCode))
-    setBaseStartCode(0,sanitizeCode(event.team0.BaseStartCode))
-    setBaseUpdateCode(0,sanitizeCode(event.team0.BaseUpdateCode))
-    setShipStartCode(1,sanitizeCode(event.team1.ShipStartCode))
-    setShipUpdateCode(1,sanitizeCode(event.team1.ShipUpdateCode))
-    setBaseStartCode(1,sanitizeCode(event.team1.BaseStartCode))
-    setBaseUpdateCode(1,sanitizeCode(event.team1.BaseUpdateCode))
+    setShipStartCode(0,sanitizeCode(event.ShipStartCode0))
+    setShipUpdateCode(0,sanitizeCode(event.ShipUpdateCode0))
+    setBaseStartCode(0,sanitizeCode(event.BaseStartCode0))
+    setBaseUpdateCode(0,sanitizeCode(event.BaseUpdateCode0))
+    setShipStartCode(1,sanitizeCode(event.ShipStartCode1))
+    setShipUpdateCode(1,sanitizeCode(event.ShipUpdateCode1))
+    setBaseStartCode(1,sanitizeCode(event.BaseStartCode1))
+    setBaseUpdateCode(1,sanitizeCode(event.BaseUpdateCode1))
     setGraphicsEnabled(false)
     let i = 1
     let start = performance.now()
@@ -48,15 +71,19 @@ export const handler = async (event, context) => {
             console.log('Success!!')
             console.log(`Ran ${i} steps in: ${performance.now() - start}ms`)
             stopGame()
-            status = "success"
+            callback(response_success)
         }
     }
 
     setPhysicsCallbacks(physCallback)
     onGameEnd(gameEndCallback)
     runGame()
-    
-    await sleep(1000)
-    return status
+
+    setTimeout((() => {
+        stopGame()
+        console.log(`Ran for ${i} steps`)
+        console.log(status)
+        callback(undefined, response_error)
+    }),1000)
 
 }
