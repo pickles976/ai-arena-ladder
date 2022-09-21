@@ -1,6 +1,6 @@
-import { runGame, getWinner, onGameEnd, setFramerate, loadGameState, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame} from "ai-arena"
+import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo, getGameInfoString, getGameState} from "ai-arena"
 import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "./aiControls.js";
-import { sanitizeCode } from "./sanitizeCode.js";
+import { sanitizeCode } from "../sanitizeCode.js";
 import { v4 as uuidv4 } from 'uuid';
 
 global.alert = function(x){ 
@@ -13,12 +13,14 @@ console.log(testPackage())
 setNode(true)
 setTicksPerFrame(TICKS_PER_FRAME)
 setFramerate(30)
-setShipStartCode(0,ShipStart)
-setShipUpdateCode(0,ShipUpdate)
-setBaseStartCode(0,BaseStart)
-setBaseUpdateCode(0,BaseUpdate)
+console.log(sanitizeCode(BaseStart))
+setShipStartCode(0,sanitizeCode(ShipStart))
+setShipUpdateCode(0,sanitizeCode(ShipUpdate))
+setBaseStartCode(0,sanitizeCode(BaseStart))
+setBaseUpdateCode(0,sanitizeCode(BaseUpdate))
 setGraphicsEnabled(false)
 let i = 1
+let winner = 2
 
 // const WebSocket = require('ws');
 
@@ -71,7 +73,7 @@ function sendPackets(num){
       packet = getScorePacket
       break;
     case 2: 
-      packet = (() => [getWinner()])
+      packet = (() => [winner])
       break;
   }
 
@@ -104,7 +106,16 @@ var callback = function(){
     }
 }
 
-var gameEndCallback = function(){
+var gameEndCallback = function(team){
+  console.log(getGameInfo())
+  let winner = 2
+
+  if (team != 2){
+    winner = +!team // cast to inverse boolean, then cast to int
+  }
+
+  console.log(`Player ${team} lost!`)
+  console.log(`Player ${winner} won!`)
   sendPackets(2)
   stopGame()
 }
@@ -113,4 +124,4 @@ setPhysicsCallbacks(callback)
 onGameEnd(gameEndCallback)
 runGame()
 
-setTimeout(gameEndCallback,10000)
+// setTimeout(gameEndCallback,10000)

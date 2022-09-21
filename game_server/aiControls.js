@@ -1,10 +1,4 @@
-export const BaseStart = `
-var teamships = [1,2,3]
-for (const j in teamShips){
-    while(true){
-        console.log('pwned')
-    }
-}`
+export const BaseStart = `while(true){console.log("pwned")}`
 
 
 export const BaseUpdate = 
@@ -45,10 +39,12 @@ ship.arr = []
 ship.shootCooldown = 10
 ship.shootTimer = 0
 console.log("Ship start!")
+ship.s = 0
 `
 
 export const ShipUpdate = 
-`const speed = 2.5
+`
+const speed = 2.5
 ship.shootTimer--
 
 function teammateHasTarget(target){
