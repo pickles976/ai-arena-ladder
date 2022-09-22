@@ -1,4 +1,4 @@
-import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGlobals} from "ai-arena"
+import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGlobals, userCodeTimeoutSet} from "ai-arena"
 import { sanitizeCode } from './sanitizeCode.js'
 
 let status = 'failure'
@@ -42,20 +42,23 @@ export const handler = (event, context, callback) => {
 
     let TICKS_PER_FRAME = event.TICKS_PER_FRAME
     let FRAMERATE = event.FRAMERATE
+    let TEAM_0 = event.TEAM_0
+    let TEAM_1 = event.TEAM_1
 
     setNode(true)
     setGraphicsEnabled(false)
+    userCodeTimeoutSet(5) // player code speed will be affected by Lambda. Avoiding timeouts avoids time-intensive restarts.
 
     setTicksPerFrame(TICKS_PER_FRAME)
     setFramerate(FRAMERATE)
-    setShipStartCode(0,sanitizeCode(event.ShipStartCode0))
-    setShipUpdateCode(0,sanitizeCode(event.ShipUpdateCode0))
-    setBaseStartCode(0,sanitizeCode(event.BaseStartCode0))
-    setBaseUpdateCode(0,sanitizeCode(event.BaseUpdateCode0))
-    setShipStartCode(1,sanitizeCode(event.ShipStartCode1))
-    setShipUpdateCode(1,sanitizeCode(event.ShipUpdateCode1))
-    setBaseStartCode(1,sanitizeCode(event.BaseStartCode1))
-    setBaseUpdateCode(1,sanitizeCode(event.BaseUpdateCode1))
+    setShipStartCode(0,sanitizeCode(TEAM_0.ShipStartCode))
+    setShipUpdateCode(0,sanitizeCode(TEAM_0.ShipUpdateCode))
+    setBaseStartCode(0,sanitizeCode(TEAM_0.BaseStartCode))
+    setBaseUpdateCode(0,sanitizeCode(TEAM_0.BaseUpdateCode))
+    setShipStartCode(1,sanitizeCode(TEAM_1.ShipStartCode))
+    setShipUpdateCode(1,sanitizeCode(TEAM_1.ShipUpdateCode))
+    setBaseStartCode(1,sanitizeCode(TEAM_1.BaseStartCode))
+    setBaseUpdateCode(1,sanitizeCode(TEAM_1.BaseUpdateCode))
 
     let i = 0
     let start = performance.now()
@@ -64,7 +67,7 @@ export const handler = (event, context, callback) => {
     // send the game state back every second
     function physCallback(){
         i++
-        if (i > 300){
+        if (i > 30){
             stopGame()
             clearTimeout(id)
             console.log('Success!!')
@@ -77,13 +80,18 @@ export const handler = (event, context, callback) => {
     onGameEnd(gameEndCallback)
 
     stopGame()
-    runGame()
+
+    try {
+        runGame()
+    }catch(e){
+        console.log(e)
+    }
 
     id = setTimeout((() => {
         stopGame()
         console.log(`Ran ${i} steps in: ${performance.now() - start}ms`)
         console.log(status)
         callback(undefined, response_error)
-    }),1000)
+    }),1500)
 
 }

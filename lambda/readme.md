@@ -5,9 +5,9 @@ Game with both teams as user AI must run for 3000 ticks in 10s without timing ou
 - [x] Test in Lambda locally
 - [x] Test success and failure 
 - [x] Test with Postman 
-- [ ] Deploy to ECR
-- [ ] Deploy to Lambda
-- [ ] Test with postman in prod
+- [x] Deploy to ECR
+- [x] Deploy to Lambda
+- [x] Test with postman in prod
 
 ###To build you image:
 
