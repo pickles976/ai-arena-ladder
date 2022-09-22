@@ -1,5 +1,5 @@
 import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo, getGameInfoString, getGameState} from "ai-arena"
-import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "./aiControls.js";
+import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "../aiControls.js";
 import { sanitizeCode } from "../sanitizeCode.js";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,25 +7,17 @@ global.alert = function(x){
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
 }; 
 
-let TICKS_PER_FRAME = 32
-
 console.log(testPackage())
-setNode(true)
+let TICKS_PER_FRAME = 32
 setTicksPerFrame(TICKS_PER_FRAME)
 setFramerate(30)
-console.log(sanitizeCode(BaseStart))
-setShipStartCode(0,sanitizeCode(ShipStart))
-setShipUpdateCode(0,sanitizeCode(ShipUpdate))
-setBaseStartCode(0,sanitizeCode(BaseStart))
-setBaseUpdateCode(0,sanitizeCode(BaseUpdate))
+setNode(true)
 setGraphicsEnabled(false)
+
 let i = 1
 let winner = 2
 
-// const WebSocket = require('ws');
-
 import {WebSocketServer} from "ws"
-
 
 const wss = new WebSocketServer({ port: 7071 });
 const clients = new Map();
@@ -39,26 +31,15 @@ wss.on('connection', (ws) => {
 
     console.log('client connected!')
 
-    // ws.on('message', (messageAsString) => {
-    //   const message = JSON.parse(messageAsString);
-    //   const metadata = clients.get(ws);
-
-    //   message.sender = metadata.id;
-    //   message.color = metadata.color;
+    ws.on('message', (messageAsString) => {
+      const data = JSON.parse(messageAsString);
+      startGameWithParams(data)
+    });
 });
 
 wss.on("close", () => {
   clients.delete(ws);
 });
-
-function sendGameState(){
-
-    const payload = Float32Array.from([0, getGamePacket()]);
-
-    [...clients.keys()].forEach((client) => {
-        client.send(payload);
-    });
-}
 
 // kind of hacky
 function sendPackets(num){
@@ -84,7 +65,8 @@ function sendPackets(num){
   });
 }
 
-console.log("wss up");
+console.log("Game Server is up");
+console.log("Waiting for connection...")
 
 let start = performance.now()
 
@@ -120,8 +102,24 @@ var gameEndCallback = function(team){
   stopGame()
 }
 
-setPhysicsCallbacks(callback)
-onGameEnd(gameEndCallback)
-runGame()
+var startGameWithParams = function(data){
 
-// setTimeout(gameEndCallback,10000)
+  console.log(`Starting game with params: ${JSON.stringify(data)}`)
+
+  const team0 = data.TEAM0
+  const team1 = data.TEAM1
+
+  setShipStartCode(0,sanitizeCode(team0.ShipStartCode))
+  setShipUpdateCode(0,sanitizeCode(team0.ShipUpdateCode))
+  setBaseStartCode(0,sanitizeCode(team0.BaseStartCode))
+  setBaseUpdateCode(0,sanitizeCode(team0.BaseUpdateCode))
+
+  setShipStartCode(1,sanitizeCode(team1.ShipStartCode))
+  setShipUpdateCode(1,sanitizeCode(team1.ShipUpdateCode))
+  setBaseStartCode(1,sanitizeCode(team1.BaseStartCode))
+  setBaseUpdateCode(1,sanitizeCode(team1.BaseUpdateCode))
+
+  setPhysicsCallbacks(callback)
+  onGameEnd(gameEndCallback)
+  runGame()
+}
