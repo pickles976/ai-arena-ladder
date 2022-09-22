@@ -1,13 +1,11 @@
-import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo} from "ai-arena"
+import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGlobals} from "ai-arena"
 import { sanitizeCode } from './sanitizeCode.js'
 
 let status = 'failure'
 
-function sleep(ms) {
-    return new Promise(
-      resolve => setTimeout(resolve, ms)
-    );
-}
+global.alert = function(x){ 
+    x === 'undefined' ? console.error('undefined') : console.error(x); return; 
+}; 
   
 var gameEndCallback = function(value){
     stopGame()
@@ -35,21 +33,19 @@ export const handler = (event, context, callback) => {
     if (event.body){
         console.log(`Raw event: ${event}`)
         console.log(`Event body: ${event.body}`)
-        event = event.body
+        event = JSON.parse(event.body)
     }
 
-    console.log(`Received event: ${event}`);
+    console.log(`Received event: ${JSON.stringify(event)}`);
 
     console.log(testPackage())
-
-    global.alert = function(x){ 
-        x === 'undefined' ? console.error('undefined') : console.error(x); return; 
-    }; 
 
     let TICKS_PER_FRAME = event.TICKS_PER_FRAME
     let FRAMERATE = event.FRAMERATE
 
     setNode(true)
+    setGraphicsEnabled(false)
+
     setTicksPerFrame(TICKS_PER_FRAME)
     setFramerate(FRAMERATE)
     setShipStartCode(0,sanitizeCode(event.ShipStartCode0))
@@ -60,28 +56,32 @@ export const handler = (event, context, callback) => {
     setShipUpdateCode(1,sanitizeCode(event.ShipUpdateCode1))
     setBaseStartCode(1,sanitizeCode(event.BaseStartCode1))
     setBaseUpdateCode(1,sanitizeCode(event.BaseUpdateCode1))
-    setGraphicsEnabled(false)
-    let i = 1
+
+    let i = 0
     let start = performance.now()
+    let id = 0
 
     // send the game state back every second
     function physCallback(){
         i++
         if (i > 300){
+            stopGame()
+            clearTimeout(id)
             console.log('Success!!')
             console.log(`Ran ${i} steps in: ${performance.now() - start}ms`)
-            stopGame()
-            callback(response_success)
+            callback(undefined, response_success)
         }
     }
 
     setPhysicsCallbacks(physCallback)
     onGameEnd(gameEndCallback)
+
+    stopGame()
     runGame()
 
-    setTimeout((() => {
+    id = setTimeout((() => {
         stopGame()
-        console.log(`Ran for ${i} steps`)
+        console.log(`Ran ${i} steps in: ${performance.now() - start}ms`)
         console.log(status)
         callback(undefined, response_error)
     }),1000)
