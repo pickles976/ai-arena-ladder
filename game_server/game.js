@@ -2,6 +2,7 @@ import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame,
 import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "../aiControls.js";
 import { sanitizeCode } from "../sanitizeCode.js";
 import { v4 as uuidv4 } from 'uuid';
+import {WebSocketServer} from "ws"
 
 global.alert = function(x){ 
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
@@ -16,10 +17,12 @@ setGraphicsEnabled(false)
 
 let i = 1
 let winner = 2
+let start = 0
+let elapsed = 0
 
-import {WebSocketServer} from "ws"
+const PORT = 7071
 
-const wss = new WebSocketServer({ port: 7071 });
+const wss = new WebSocketServer({ port: PORT });
 const clients = new Map();
 
 wss.on('connection', (ws) => {
@@ -68,17 +71,15 @@ function sendPackets(num){
 console.log("Game Server is up");
 console.log("Waiting for connection...")
 
-let start = performance.now()
-
 // send the game state back every second
 var callback = function(){
 
     i++
     // console.log(i)
     // console.log(performance.now() - start)
-    start = performance.now()
+    // start = performance.now()
 
-    if (i % (TICKS_PER_FRAME * 2) === 0){
+    if (i % (TICKS_PER_FRAME * 1) === 0){
       sendPackets(0)
     }
     
@@ -88,7 +89,9 @@ var callback = function(){
     }
 }
 
-var gameEndCallback = function(team){
+var gameEndCallback = function(team=2){
+  elapsed = performance.now() - start
+
   console.log(getGameInfo())
   let winner = 2
 
@@ -96,6 +99,7 @@ var gameEndCallback = function(team){
     winner = +!team // cast to inverse boolean, then cast to int
   }
 
+  console.log(`Ran ${i} timesteps in ${elapsed}ms`)
   console.log(`Player ${team} lost!`)
   console.log(`Player ${winner} won!`)
   sendPackets(2)
@@ -105,6 +109,7 @@ var gameEndCallback = function(team){
 var startGameWithParams = function(data){
 
   console.log(`Starting game with params: ${JSON.stringify(data)}`)
+  start = performance.now()
 
   const team0 = data.TEAM0
   const team1 = data.TEAM1
@@ -122,4 +127,5 @@ var startGameWithParams = function(data){
   setPhysicsCallbacks(callback)
   onGameEnd(gameEndCallback)
   runGame()
+  // setTimeout(gameEndCallback,5000)
 }
