@@ -6,7 +6,7 @@ let gameQueue = [data, data, data, data, data]
 const QUEUE_SIZE = 25
 
 // WS CLIENT
-const URL = 'localhost'
+const URL = 'game-server'
 const GAME_PORT = 7071
 const ws = await connectToServer();   
 

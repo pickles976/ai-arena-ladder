@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  game-server:
+    build: game_server/.
+    ports:
+      - "7071:7071"
+  game-ladder:
+    build: ladder/.
+    ports:
+      - "7072:7072"
+    depends_on:
+      - game-server

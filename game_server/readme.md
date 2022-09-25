@@ -6,8 +6,8 @@ Game packets are ~1.5Kbps, sent 15x per second.
 
 - [x] Port to Node.js
 - [x] Sync via websockets
-- [ ] Listen for input via Websocket
-- [ ] Run on input, return to waiting on game end
+- [x] Listen for input via Websocket
+- [x] Run on input, return to waiting on game end
 - [ ] Dockerize
 
 Sanitizing user code:

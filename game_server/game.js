@@ -1,6 +1,5 @@
-import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo, getGameInfoString, getGameState} from "ai-arena"
-import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from "../aiControls.js";
-import { sanitizeCode } from "../sanitizeCode.js";
+import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo  } from "ai-arena"
+import { sanitizeCode } from "./sanitizeCode.js";
 import { v4 as uuidv4 } from 'uuid';
 import {WebSocketServer} from "ws"
 

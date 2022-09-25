@@ -2,7 +2,9 @@
     "type": "module",
     "dependencies": {
         "ai-arena": "^1.0.12",
+        "uuid": "^9.0.0",
         "escodegen": "^2.0.0",
+        "esprima": "^4.0.1",
         "http-server": "^14.1.1",
         "ws": "^8.8.1"
     }
