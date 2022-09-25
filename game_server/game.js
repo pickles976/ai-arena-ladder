@@ -21,6 +21,7 @@ let start = 0
 let elapsed = 0
 
 const PORT = 7071
+const MAX_GAME_TICKS = 54000 // 30-min realtime
 
 const wss = new WebSocketServer({ port: PORT });
 const clients = new Map();
@@ -79,13 +80,18 @@ var callback = function(){
     // console.log(performance.now() - start)
     // start = performance.now()
 
-    if (i % (TICKS_PER_FRAME * 1) === 0){
-      sendPackets(0)
-    }
-    
-    if (i % (TICKS_PER_FRAME * 10) === 1){
-      console.log("Sending game score to client")
-      sendPackets(1)
+    if(i > MAX_GAME_TICKS){
+      // console.log('Sending game end data to client.')
+      gameEndCallback()
+    }else{
+      if (i % (TICKS_PER_FRAME * 1) === 0){
+        sendPackets(0)
+      }
+      
+      if (i % (TICKS_PER_FRAME * 10) === 1){
+        console.log("Sending game score to client")
+        sendPackets(1)
+      }
     }
 }
 
@@ -110,6 +116,8 @@ var startGameWithParams = function(data){
 
   console.log(`Starting game with params: ${JSON.stringify(data)}`)
   start = performance.now()
+  i = 1
+  winner = 2
 
   const team0 = data.TEAM0
   const team1 = data.TEAM1

@@ -3,49 +3,36 @@ import { v4 as uuidv4 } from 'uuid';
 import {WebSocketServer, WebSocket} from "ws"
 
 let gameQueue = [data, data, data, data, data]
+const QUEUE_SIZE = 25
 
-// ws client
+// WS CLIENT
 const URL = 'localhost'
 const GAME_PORT = 7071
 const ws = await connectToServer();   
 
-// ws server
+// WS SERVER
 const SERVER_PORT = 7072
 const wss = new WebSocketServer({ port: SERVER_PORT })
 const clients = new Map()
 
-// Client stuff
+// CLIENT
 ws.onmessage = (webSocketMessage) => {
 
     const blob = webSocketMessage.data;
-    // console.log(blob)
 
-    // pass this blob back to the clients
-    forwardPackets(blob)
+    // // pass this blob back to the clients
+    forwardPackets(blob);
 
     // check if the game is over
-
     // send another game to the game server
-    startNewGame()
+    (async () => {
+        let i = blob.readFloatLE(0) // check packet type
+        if (i == 2){
+            saveGame(blob.readFloatLE(4)) // add more game data to this
+            startNewGame()
+        }
+    })()
 
-    // (async () => {
-    //     const arr = await blob.arrayBuffer()
-    //     let floatArray = new Float32Array(arr)
-    //     const i = floatArray[0]
-    //     floatArray = floatArray.slice(1,floatArray.length)
-    //     switch(i){
-    //         case 0:
-    //             loadGamePacket(floatArray)
-    //             break;
-    //         case 1:
-    //             loadScorePacket(floatArray)
-    //             console.log(getGameInfo())
-    //             break;
-    //         case 2:
-    //             console.log(floatArray)
-    //             break;
-    //     }
-    // })()
 };        
     
 async function connectToServer() {    
@@ -61,7 +48,7 @@ async function connectToServer() {
     });   
 }
 
-// Server stuff
+// SERVER
 wss.on('connection', (ws) => {
     const id = uuidv4();
     const metadata = { id };
@@ -69,7 +56,7 @@ wss.on('connection', (ws) => {
     console.log('Client connected!')
 
     ws.on('message', (messageAsString) => {
-        console.log(messageAsString)
+        // console.log(messageAsString)
     });
 });
 
@@ -81,17 +68,37 @@ function forwardPackets(payload){
     [...clients.keys()].forEach((client) => {
         client.send(payload);
     });
-    console.log(`Forwarding packets to ${clients.size} clients`)
+    // console.log(`Forwarding packets to ${clients.size} clients`)
 }
 
 // OTHER
 
 function startNewGame(){
+    console.log(`New game starting!`)
+    console.log(`${gameQueue.length} games left in queue`)
+
+    if(gameQueue.length < QUEUE_SIZE){
+        console.log(`Fetching matches from server...`)
+        fetchGames().then((games) => {
+            gameQueue = gameQueue.concat(games)
+        })
+    }
+
     let newGame = gameQueue.shift()
 
     if(newGame){
         ws.send(JSON.stringify(newGame))
     }
+}
+
+// Get new games for queue
+async function fetchGames(){
+    // API call
+    return [data, data, data, data, data]
+}
+
+async function saveGame(winner){
+    //do something
 }
 
 console.log('Ladder server is up.')
