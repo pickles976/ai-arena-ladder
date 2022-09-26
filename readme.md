@@ -12,15 +12,14 @@ The Game Server then runs the game as quickly as it can and passes the game stat
  If the game queue of the ladder gets too low, it will grab new games from the API. 
  These are usually games of players who haven't interacted before, or code with the fewest online matches.
 
- ```mermaid
-graph LR  
-    GameServer ->|GameState| Ladder;
-    Ladder ->|GameParams| GameServer;
-    Ladder ->|GameState| Client_1;
-    Ladder -> Client_2;
-    Ladder -> Client_3;
-    API ->|UserCode| Ladder;
- ```
+```mermaid
+graph LR;
+    GameServer-->|GameState|Ladder;
+    Ladder-->|GameParams|GameServer;
+    Ladder-->|GameState|Client_0;
+    Ladder-->|GameState|Client_1;
+    API-->|GameInfo|Ladder;
+```
 
 ### Running Locally:
 
@@ -37,7 +36,7 @@ Run the Ladder
 
 Run the game client:
 ```
-    cd http-server
+    http-server
 ```
 
 go to localhost:8080/index.html
@@ -52,6 +51,6 @@ TODO: put some stuff here
 
 Packet types:
 
-0 - game state
-1 - game score data
-2 - game over conditions
+0 - game state  
+1 - game score data  
+2 - game over conditions  
