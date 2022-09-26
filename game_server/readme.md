@@ -1,18 +1,22 @@
-The game server runs a single game instance as quickly as it can. Every other frame it passes the game state packets to the ladder server via websockets. Every second it passes the score to the ladder via websockets.
+# Game Server
 
-If a game has not terminated within 27000 timesteps (15 min realtime) the game will terminate with a tie.
+The game server runs a single game instance as quickly as it can. After a specified number of game ticks it sends game state packets to the ladder server via websockets. Every second or so it passes the score to the ladder via websockets.
 
-Game packets are ~1.5Kbps, sent 15x per second.
+If a game has not terminated within 54000 timesteps (30 min realtime) the game will terminate with a tie.
 
+Game packets are ~12Kbps, sent 30x per second. This is sufficiently small for even the smallest EC2 instance.
+
+How user code is sanitized:
+
+- Parse user code to AST tree to extract line numbers of loops
+- inject timeouts into any loop
+- All injected variables have a random UUID (can't be overridden if the user doesn't know their name)
+- check for memory bombs at the end of user code (users can only allocate 8kb of memory per agent)
+
+## TODO:
 - [x] Port to Node.js
 - [x] Sync via websockets
 - [x] Listen for input via Websocket
 - [x] Run on input, return to waiting on game end
-- [ ] Dockerize
-
-Sanitizing user code:
-
-- UUID variable names
-- AST tree to extract line numbers of loops
-- inject timeouts into any loop
-- check for memory bombs at the end of user code
+- [x] Dockerize
+- [ ] Send more info on game end
