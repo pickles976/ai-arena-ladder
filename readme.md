@@ -14,12 +14,12 @@ The Game Server then runs the game as quickly as it can and passes the game stat
 
  ```mermaid
 graph LR  
-    Game Server ->|Game State| Ladder;
-    Ladder ->|Game Params| Game Server;
-    Ladder ->|Game State| Client_1;
+    GameServer ->|GameState| Ladder;
+    Ladder ->|GameParams| GameServer;
+    Ladder ->|GameState| Client_1;
     Ladder -> Client_2;
     Ladder -> Client_3;
-    API ->|User Code| Ladder;
+    API ->|UserCode| Ladder;
  ```
 
 ### Running Locally:
