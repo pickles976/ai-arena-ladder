@@ -13,7 +13,7 @@ The Game Server then runs the game as quickly as it can and passes the game stat
  These are usually games of players who haven't interacted before, or code with the fewest online matches.
 
  ```mermaid
-graph LR
+graph LR  
     Game Server ->|Game State| Ladder;
     Ladder ->|Game Params| Game Server;
     Ladder ->|Game State| Client_1;
