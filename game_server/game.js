@@ -1,5 +1,4 @@
-import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks,getGamePacket, getScorePacket, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGameInfo  } from "ai-arena"
-import { sanitizeCode } from "./sanitizeCode.js";
+import { runGame,testPackage,getGamePacket, getScorePacket, stopGame, setConfig, setCallbacks, getScore, setUserCode  } from "ai-arena"
 import { v4 as uuidv4 } from 'uuid';
 import {WebSocketServer} from "ws"
 
@@ -9,10 +8,15 @@ global.alert = function(x){
 
 console.log(testPackage())
 let TICKS_PER_FRAME = 32
-setTicksPerFrame(TICKS_PER_FRAME)
-setFramerate(30)
-setNode(true)
-setGraphicsEnabled(false)
+export const USER_CODE_TIMEOUT = 1.0
+
+setConfig({
+  graphics: false,
+  ticksPerFrame: TICKS_PER_FRAME,
+  framerate: 30,
+  nodejs: true,
+  userCodeTimeout: USER_CODE_TIMEOUT,
+})
 
 let i = 1
 let winner = 2
@@ -68,7 +72,7 @@ function sendPackets(num){
   });
 }
 
-console.log("Game Server is up");
+console.log(`Game Server is up at ${PORT}`);
 console.log("Waiting for connection...")
 
 // send the game state back every second
@@ -97,7 +101,7 @@ var callback = function(){
 var gameEndCallback = function(team=2){
   elapsed = performance.now() - start
 
-  console.log(getGameInfo())
+  console.log(getScore())
   let winner = 2
 
   if (team != 2){
@@ -118,21 +122,13 @@ var startGameWithParams = function(data){
   i = 1
   winner = 2
 
-  const team0 = data.TEAM0
-  const team1 = data.TEAM1
+  setUserCode(data)
 
-  setShipStartCode(0,sanitizeCode(team0.ShipStartCode))
-  setShipUpdateCode(0,sanitizeCode(team0.ShipUpdateCode))
-  setBaseStartCode(0,sanitizeCode(team0.BaseStartCode))
-  setBaseUpdateCode(0,sanitizeCode(team0.BaseUpdateCode))
+  setCallbacks({
+    'physics': callback,
+    'gameEnd': gameEndCallback
+  })
 
-  setShipStartCode(1,sanitizeCode(team1.ShipStartCode))
-  setShipUpdateCode(1,sanitizeCode(team1.ShipUpdateCode))
-  setBaseStartCode(1,sanitizeCode(team1.BaseStartCode))
-  setBaseUpdateCode(1,sanitizeCode(team1.BaseUpdateCode))
-
-  setPhysicsCallbacks(callback)
-  onGameEnd(gameEndCallback)
   runGame()
   // setTimeout(gameEndCallback,5000)
 }

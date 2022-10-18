@@ -99,6 +99,7 @@ async function fetchGames(){
 
 async function saveGame(winner){
     //do something
+    console.log(winner)
 }
 
 console.log('Ladder server is up.')

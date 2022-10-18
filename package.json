@@ -1,10 +1,20 @@
 {
   "type": "module",
   "dependencies": {
-    "ai-arena": "^1.0.12",
+    "ai-arena": "^1.0.13",
+    "concurrently": "^7.4.0",
     "esprima": "^4.0.1",
     "http-server": "^14.1.1",
     "uuid": "^9.0.0",
     "ws": "^8.8.1"
+  },
+  "scripts": {
+    "game": "nodemon game_server/game.js",
+    "ladder": "nodemon ladder/game.js",
+    "client": "http-server",
+    "dev": "concurrently \"npm run game\" \"npm run ladder\" \"npm run client\""
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }

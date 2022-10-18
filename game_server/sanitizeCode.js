@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as esprima from 'esprima';
-import { getUserCodeTimeout } from 'ai-arena'
+import { USER_CODE_TIMEOUT } from './game';
 
 function isLoop(node){
   return (node.type === "ForStatement" ||
@@ -14,7 +14,7 @@ export function sanitizeCode(code){
   // Set the Start() and Callback() bindings to be random values
   const startID = '_' + uuidv4().replaceAll('-','_')
   const start = `const ${startID} = performance.now(); \n`
-  const timeCheck = `\nif (performance.now() - ${startID} > ${getUserCodeTimeout() * 2}){ break; } \n`
+  const timeCheck = `\nif (performance.now() - ${startID} > ${USER_CODE_TIMEOUT * 2}){ break; } \n`
 
   let safeCode = start + code
 

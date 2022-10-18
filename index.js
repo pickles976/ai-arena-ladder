@@ -18,7 +18,7 @@ const PORT = 7072;
                     break;
                 case 1:
                     loadScorePacket(floatArray)
-                    console.log(getGameInfo())
+                    console.log(getScore())
                     break;
                 case 2:
                     console.log(floatArray)
@@ -41,7 +41,7 @@ const PORT = 7072;
 
 })();
 
-import {setCanvas, testPackage, runGame, loadGamePacket, loadScorePacket, setTicksPerFrame, setFramerate, setStreaming, setPhysicsCallbacks, setGraphicsEnabled, getGameInfo} from './node_modules/ai-arena/dist/index.js'
+import {testPackage, runGame, loadGamePacket, loadScorePacket, getScore, setConfig} from './node_modules/ai-arena/dist/index.js'
 
 // let start = performance.now()
 // let callback = function(){
@@ -50,10 +50,14 @@ import {setCanvas, testPackage, runGame, loadGamePacket, loadScorePacket, setTic
 // }
 
 console.log(testPackage())
-setCanvas(document.getElementById("game-canvas"))
-setTicksPerFrame(1)
 // setPhysicsCallbacks((callback))
-setFramerate(30)
-setStreaming(true)
 // setGraphicsEnabled(false)
+
+setConfig({
+    canvas: document.getElementById("game-canvas"),
+    ticksPerFrame: 1,
+    setFramerate: 30,
+    streaming: true
+})
+
 runGame()

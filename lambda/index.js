@@ -1,7 +1,7 @@
-import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGlobals, userCodeTimeoutSet} from "ai-arena"
+import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGlobals, userCodeTimeoutSet, setUserCode, setConfig, setCallbacks} from "ai-arena"
 import { sanitizeCode } from './sanitizeCode.js'
 
-const CODE_TIMEOUT = 3
+const USER_CODE_TIMEOUT = 3
 const TIMEOUT = 1500
 let status = 'failure'
 let steps = 0
@@ -39,7 +39,7 @@ const response_error = {
 
 export const handler = (event, context, callback) => {
 
-    context.callbackWaitsForEmptyEventLoop = false
+    context.callbackWaitsForEmptyEventLoop = false // ???
 
     if (event.body){
         console.log(`Raw event: ${event}`)
@@ -53,23 +53,22 @@ export const handler = (event, context, callback) => {
 
     let TICKS_PER_FRAME = event.TICKS_PER_FRAME
     let FRAMERATE = event.FRAMERATE
-    let TEAM_0 = event.TEAM_0
-    let TEAM_1 = event.TEAM_1
 
-    setNode(true)
-    setGraphicsEnabled(false)
-    userCodeTimeoutSet(CODE_TIMEOUT) // player code speed will be affected by Lambda. Avoiding timeouts avoids time-intensive restarts.
+    // Configure game
+    setConfig({
+        graphics: false,
+        ticksPerFrame: TICKS_PER_FRAME,
+        framerate: FRAMERATE,
+        nodejs: true,
+        userCodeTimeout: USER_CODE_TIMEOUT,
+    })
 
-    setTicksPerFrame(TICKS_PER_FRAME)
-    setFramerate(FRAMERATE)
-    setShipStartCode(0,sanitizeCode(TEAM_0.ShipStartCode))
-    setShipUpdateCode(0,sanitizeCode(TEAM_0.ShipUpdateCode))
-    setBaseStartCode(0,sanitizeCode(TEAM_0.BaseStartCode))
-    setBaseUpdateCode(0,sanitizeCode(TEAM_0.BaseUpdateCode))
-    setShipStartCode(1,sanitizeCode(TEAM_1.ShipStartCode))
-    setShipUpdateCode(1,sanitizeCode(TEAM_1.ShipUpdateCode))
-    setBaseStartCode(1,sanitizeCode(TEAM_1.BaseStartCode))
-    setBaseUpdateCode(1,sanitizeCode(TEAM_1.BaseUpdateCode))
+    setUserCode(event.CODE)
+
+    setCallbacks({
+        'physics': physCallback,
+        'gameEnd': gameEndCallback,
+    })
 
     let start = performance.now()
     let id = 0
@@ -90,9 +89,6 @@ export const handler = (event, context, callback) => {
             callback(undefined, addData(response_success))
         }
     }
-
-    setPhysicsCallbacks(physCallback)
-    onGameEnd(gameEndCallback)
 
     stopGame()
 
