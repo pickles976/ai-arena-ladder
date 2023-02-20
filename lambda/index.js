@@ -1,6 +1,6 @@
 import { runGame, testPackage, stopGame, setUserCode, setConfig, setCallbacks} from "ai-arena"
 import { sanitizeCode } from './sanitizeCode.js'
-import { USER_CODE_TIMEOUT } from "./globals.js"
+import { FRAMERATE, TICKS_PER_FRAME, USER_CODE_TIMEOUT } from "./globals.js"
 
 const TIMEOUT = 1500
 let status = 'failure'
@@ -51,8 +51,8 @@ export const handler = (event, context, callback) => {
 
     console.log(testPackage())
 
-    let TICKS_PER_FRAME = event.TICKS_PER_FRAME
-    let FRAMERATE = event.FRAMERATE
+    // let TICKS_PER_FRAME = event.TICKS_PER_FRAME
+    // let FRAMERATE = event.FRAMERATE
 
     // Configure game
     setConfig({
@@ -63,8 +63,6 @@ export const handler = (event, context, callback) => {
         userCodeTimeout: USER_CODE_TIMEOUT,
     })
 
-    // setUserCode(event.CODE)
-    // event.TEAM_0
     setUserCode({
         team0 : {
             BaseStartCode : sanitizeCode(event.TEAM_0.BaseStartCode),
