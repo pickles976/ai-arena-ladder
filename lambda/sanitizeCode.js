@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as esprima from 'esprima';
-import { USER_CODE_TIMEOUT } from '../game_server/game';
+import { USER_CODE_TIMEOUT } from './globals.js';
 
 function isLoop(node){
   return (node.type === "ForStatement" ||

@@ -4,6 +4,6 @@ COPY package.json ${LAMBDA_TASK_ROOT}
 
 RUN npm install
 
-COPY index.js sanitizeCode.js ${LAMBDA_TASK_ROOT}
+COPY globals.js index.js sanitizeCode.js ${LAMBDA_TASK_ROOT}
 
 CMD [ "index.handler" ]

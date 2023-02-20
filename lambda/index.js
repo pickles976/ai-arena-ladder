@@ -1,7 +1,7 @@
-import { runGame, onGameEnd, setFramerate, setGraphicsEnabled, setTicksPerFrame, testPackage, setPhysicsCallbacks, setShipStartCode, setShipUpdateCode, setBaseStartCode, setBaseUpdateCode, setNode, stopGame, getGlobals, userCodeTimeoutSet, setUserCode, setConfig, setCallbacks} from "ai-arena"
+import { runGame, testPackage, stopGame, setUserCode, setConfig, setCallbacks} from "ai-arena"
 import { sanitizeCode } from './sanitizeCode.js'
+import { USER_CODE_TIMEOUT } from "./globals.js"
 
-const USER_CODE_TIMEOUT = 3
 const TIMEOUT = 1500
 let status = 'failure'
 let steps = 0
@@ -63,7 +63,16 @@ export const handler = (event, context, callback) => {
         userCodeTimeout: USER_CODE_TIMEOUT,
     })
 
-    setUserCode(event.CODE)
+    // setUserCode(event.CODE)
+    // event.TEAM_0
+    setUserCode({
+        team0 : {
+            BaseStartCode : sanitizeCode(event.TEAM_0.BaseStartCode),
+            BaseUpdateCode : sanitizeCode(event.TEAM_0.BaseUpdateCode),
+            ShipStartCode : sanitizeCode(event.TEAM_0.ShipStartCode),
+            ShipUpdateCode : sanitizeCode(event.TEAM_0.ShipUpdateCode)
+        }
+    })
 
     setCallbacks({
         'physics': physCallback,
@@ -80,12 +89,15 @@ export const handler = (event, context, callback) => {
     function physCallback(){
         steps++
         elapsed = performance.now() - start
-        status = 'success'
-        if (steps > 24){
+        status = 'incomplete'
+        if (steps > 24) {
             stopGame()
             clearTimeout(id)
-            console.log('Success!!')
+            status = 'success'
             console.log(`Ran ${steps} steps in: ${elapsed}ms`)
+
+            // TODO: send off the code here
+
             callback(undefined, addData(response_success))
         }
     }
@@ -94,9 +106,12 @@ export const handler = (event, context, callback) => {
 
     try {
         runGame()
-    }catch(e){
-        console.log(e)
+    } catch (err) {
+        console.log(err)
+        status = 'user code error'
+        callback(undefined, addData(response_error))
     }
+
 
     id = setTimeout((() => {
         stopGame()

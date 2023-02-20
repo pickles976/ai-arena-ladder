@@ -25,11 +25,8 @@ http://localhost:9000/2015-03-31/functions/function/invocations
 4. Deploy to Lambda
 5. Test with Postman in Lambda
 
-## ~~TODO:~~
-- [x] Game runs locally
-- [x] Test in Lambda locally
-- [x] Test success and failure 
-- [x] Test with Postman 
-- [x] Deploy to ECR
-- [x] Deploy to Lambda
-- [x] Test with postman in prod
+## TODO:
+- [x] Test Lambda works
+- [ ] Sanitize user code
+- [ ] Return status update to requester
+- [ ] Send sanitized code to DB on user's behalf

@@ -1,0 +1,1 @@
+export const USER_CODE_TIMEOUT = 3
