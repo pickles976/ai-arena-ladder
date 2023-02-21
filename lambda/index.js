@@ -47,7 +47,7 @@ let saveCode = async function(event, finalCallback) {
         'apikey' : supabaseAuth,
         'Authorization' : `Bearer ${event.userkey}`,
         'Content-Type': 'application/json',
-        "Prefer" : "return=minimal"
+        "Prefer" : "resolution=merge-duplicates"
     }
 
     let data = {
@@ -59,7 +59,7 @@ let saveCode = async function(event, finalCallback) {
 
     axios
     .post(supabaseURL, JSON.stringify(data), { 'headers' : headers })
-    .then(response => console.log(response))
+    .then(response => { console.log(JSON.stringify(response)); finalCallback() })
     .then(response => { console.log(JSON.stringify(response)); finalCallback() })
     .catch(err => console.log(err))
 
@@ -134,7 +134,6 @@ export const handler = (event, context, callback) => {
 
             // Save code off to db here
             saveCode(event, () => { callback(undefined, addData(response_success)) })
-            // callback(undefined, addData(response_success))
         }
     }
 
