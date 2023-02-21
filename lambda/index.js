@@ -39,7 +39,9 @@ var addData = function(response){
     return response
 }
 
-let saveCode = async function(event) {
+let saveCode = async function(event, finalCallback) {
+
+    console.log("Sending code to server...")
 
     let headers = {
         'apikey' : supabaseAuth,
@@ -58,7 +60,7 @@ let saveCode = async function(event) {
     axios
     .post(supabaseURL, JSON.stringify(data), { 'headers' : headers })
     .then(response => console.log(response))
-    .then(response => console.log(JSON.stringify(response)))
+    .then(response => { console.log(JSON.stringify(response)); finalCallback() })
     .catch(err => console.log(err))
 
 }
@@ -80,8 +82,8 @@ export const handler = (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false // ???
 
     if (event.body){
-        console.log(`Raw event: ${event}`)
-        console.log(`Event body: ${event.body}`)
+        // console.log(`Raw event: ${event}`)
+        // console.log(`Event body: ${event.body}`)
         event = JSON.parse(event.body)
     }
 
@@ -127,11 +129,12 @@ export const handler = (event, context, callback) => {
             stopGame()
             clearTimeout(id)
             status = 'success'
+            console.log(status)
             console.log(`Ran ${steps} steps in: ${elapsed}ms`)
 
             // Save code off to db here
-            saveCode(event)
-            callback(undefined, addData(response_success))
+            saveCode(event, () => { callback(undefined, addData(response_success)) })
+            // callback(undefined, addData(response_success))
         }
     }
 
@@ -148,8 +151,8 @@ export const handler = (event, context, callback) => {
 
     id = setTimeout((() => {
         stopGame()
-        console.log(`Ran ${steps} steps in: ${elapsed}ms`)
         console.log(status)
+        console.log(`Ran ${steps} steps in: ${elapsed}ms`)
         callback(undefined, addData(response_error))
     }),TIMEOUT)
 
