@@ -59,8 +59,8 @@ let saveCode = async function(event, finalCallback) {
 
     axios
     .post(supabaseURL, JSON.stringify(data), { 'headers' : headers })
-    .then(response => { console.log(JSON.stringify(response)); finalCallback() })
-    .then(response => { console.log(JSON.stringify(response)); finalCallback() })
+    .then(response => finalCallback())
+    .then(result => finalCallback())
     .catch(err => console.log(err))
 
 }
