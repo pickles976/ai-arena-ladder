@@ -1,11 +1,23 @@
 import { runGame, testPackage, stopGame, setUserCode, setConfig, setCallbacks} from "ai-arena"
 import { sanitizeCode } from './sanitizeCode.js'
 import { FRAMERATE, TICKS_PER_FRAME, USER_CODE_TIMEOUT } from "./globals.js"
+import axios from 'axios';
 
 const TIMEOUT = 1500
 let status = 'failure'
 let steps = 0
 let elapsed = 0
+
+// TODO: move these to env, too lazy rn
+let supabaseURL = "https://kbnorlxawefgklyeofdm.supabase.co/rest/v1/TacticalCode"
+let supabaseAuth = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtibm9ybHhhd2VmZ2tseWVvZmRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY1Njg2MTUsImV4cCI6MTk5MjE0NDYxNX0.uzdXwAq2i5eL35cBdmHtqEywiKg-2IGBzcuq5gfYLVM"
+
+let headers = {
+    'Access-Control-Allow-Credentials': 'true',
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers" : "Content-Type",
+    "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+}
 
 global.alert = function(x){ 
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
@@ -27,13 +39,39 @@ var addData = function(response){
     return response
 }
 
+let saveCode = async function(event) {
+
+    let headers = {
+        'apikey' : supabaseAuth,
+        'Authorization' : `Bearer ${event.userkey}`,
+        'Content-Type': 'application/json',
+        "Prefer" : "return=minimal"
+    }
+
+    let data = {
+        id: event.id,
+        owner: event.owner,
+        code : event.code,
+        name: event.code.name
+    }
+
+    axios
+    .post(supabaseURL, JSON.stringify(data), { 'headers' : headers })
+    .then(response => console.log(response))
+    .then(response => console.log(JSON.stringify(response)))
+    .catch(err => console.log(err))
+
+}
+
 const response_success = {
     statusCode: 200,
+    headers: headers,
     body: ''
 };
 
 const response_error = {
   statusCode: 400,
+  headers: headers,
   body: ''
 };
 
@@ -47,12 +85,9 @@ export const handler = (event, context, callback) => {
         event = JSON.parse(event.body)
     }
 
-    console.log(`Received event: ${JSON.stringify(event)}`);
+    // console.log(`Received event: ${JSON.stringify(event)}`);
 
     console.log(testPackage())
-
-    // let TICKS_PER_FRAME = event.TICKS_PER_FRAME
-    // let FRAMERATE = event.FRAMERATE
 
     // Configure game
     setConfig({
@@ -65,10 +100,10 @@ export const handler = (event, context, callback) => {
 
     setUserCode({
         team0 : {
-            BaseStartCode : sanitizeCode(event.TEAM_0.BaseStartCode),
-            BaseUpdateCode : sanitizeCode(event.TEAM_0.BaseUpdateCode),
-            ShipStartCode : sanitizeCode(event.TEAM_0.ShipStartCode),
-            ShipUpdateCode : sanitizeCode(event.TEAM_0.ShipUpdateCode)
+            BaseStartCode : sanitizeCode(event.code.baseStart),
+            BaseUpdateCode : sanitizeCode(event.code.baseUpdate),
+            ShipStartCode : sanitizeCode(event.code.shipStart),
+            ShipUpdateCode : sanitizeCode(event.code.shipUpdate)
         }
     })
 
@@ -94,8 +129,8 @@ export const handler = (event, context, callback) => {
             status = 'success'
             console.log(`Ran ${steps} steps in: ${elapsed}ms`)
 
-            // TODO: send off the code here
-
+            // Save code off to db here
+            saveCode(event)
             callback(undefined, addData(response_success))
         }
     }
@@ -106,7 +141,7 @@ export const handler = (event, context, callback) => {
         runGame()
     } catch (err) {
         console.log(err)
-        status = 'user code error'
+        status = err
         callback(undefined, addData(response_error))
     }
 
