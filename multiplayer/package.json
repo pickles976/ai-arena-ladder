@@ -5,6 +5,7 @@
     "concurrently": "^7.4.0",
     "esprima": "^4.0.1",
     "http-server": "^14.1.1",
+    "node-beanstalk": "^1.6.8",
     "uuid": "^9.0.0",
     "ws": "^8.8.1"
   },

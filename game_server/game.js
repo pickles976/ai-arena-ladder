@@ -76,7 +76,7 @@ console.log(`Game Server is up at ${PORT}`);
 console.log("Waiting for connection...")
 
 // send the game state back every second
-var callback = function(){
+let callback = function(){
 
     i++
     // console.log(i)
@@ -98,7 +98,7 @@ var callback = function(){
     }
 }
 
-var gameEndCallback = function(team=2){
+let gameEndCallback = function(team=2){
   elapsed = performance.now() - start
 
   console.log(getScore())
@@ -115,13 +115,15 @@ var gameEndCallback = function(team=2){
   stopGame()
 }
 
-var startGameWithParams = function(data){
+let startGameWithParams = function(data){
 
   console.log(`Starting game with params: ${JSON.stringify(data)}`)
   start = performance.now()
   i = 1
   winner = 2
 
+
+  // sanitize code
   setUserCode(data)
 
   setCallbacks({

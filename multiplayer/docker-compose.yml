@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  game-queue: 
+    image: schickling/beanstalkd
+    ports: 
+      - "7072:7072"
+  resolution-queue: 
+    image: schickling/beanstalkd
+    ports: 
+      - "7071:7071"
+  campaign-server:
+    build: campaign_server/.
+    depends_on:
+      - game-queue
+      - resolution-queue
+  battle-server:
+    build: battle_server/.
+    depends_on:
+      - game-queue
+      - resolution-queue
+      - campaign-server
