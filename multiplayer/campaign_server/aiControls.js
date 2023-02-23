@@ -43,7 +43,7 @@ console.log("Ship start!")
 
 export const ShipUpdate = 
 `
-const speed = 2.5
+const speed = 5.0
 ship.shootTimer--
 
 function teammateHasTarget(target){
@@ -120,6 +120,7 @@ switch(ship.state){
         
 }
 
+
 // seekTarget ENERGY
 if (ship.resources.energy < (ship.maxEnergy / 3)){
     const energyCells = Game.getEnergyCells()
@@ -141,26 +142,16 @@ if (ship.resources.energy < (ship.maxEnergy / 3)){
 }
 
 // COMBAT
-if(ship.resources.energy > (ship.maxEnergy / 2) && ship.shootTimer < 0){
-    const shootRadius = 300
-    const ships = Game.getShips()
+if(ship.resources.energy > (ship.maxEnergy / 3) && ship.shootTimer < 0){
     
-    let closest = [{},100000]
+    let shootRadius = 700
+    const enemyBase = Game.getBaseByTeam(1 - ship.team)
+    let distance = dist(ship, enemyBase)
 
-    for (const index in ships){
-        const otherShip = ships[index]
-        if (otherShip.team != ship.team){
-            const d = dist(ship,otherShip)
-            if (d < closest[1]){
-                closest = [otherShip,d]
-            }
-        }
-    }
-
-    if (closest[1] < shootRadius){
-        ship.shoot(closest[0].transform.position.add(closest[0].transform.velocity.multiply(720)).subtract(ship.transform.position))
+    if (enemyBase.resources.energy < ship.resources.energy && distance < shootRadius){
+        ship.shoot(enemyBase.transform.position.subtract(ship.transform.position))
         ship.shootTimer = ship.shootCooldown
-    }
+    }   
 }
 
 // UPGRADES
@@ -179,4 +170,19 @@ Graphics.drawText(ship.resources.toString(),ship.transform.position,10,"#FFFFFF"
 Graphics.drawText(ship.state,ship.transform.position.subtract(new Vector2D(0,1).multiply(-10)),8,"#FFFFFF")
 if (ship.target != undefined && ship.target.transform != undefined)
     Graphics.drawLine(ship.transform.position,ship.target.transform.position,"#00FF00")
+
 `
+
+export const cringeTeam = {
+    baseStart: "",
+    baseUpdate: "",
+    shipStart: "",
+    shipUpdate: ""
+}
+
+export const basedTeam = {
+    baseStart: BaseStart,
+    baseUpdate: BaseUpdate,
+    shipStart: ShipStart,
+    shipUpdate: ShipUpdate
+}

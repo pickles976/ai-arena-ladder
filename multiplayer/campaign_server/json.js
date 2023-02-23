@@ -1,4 +1,4 @@
-import { BaseStart, BaseUpdate, ShipStart, ShipUpdate } from './aiControls.js'
+import { basedTeam, cringeTeam } from './aiControls.js'
 
 export const data = {
     'uuid' : "12345678",
@@ -6,21 +6,11 @@ export const data = {
     'champion1' : {
         id : "41ic3",
         name: "Alice",
-        code : {
-            'BaseStartCode' : BaseStart,
-            'BaseUpdateCode' : BaseUpdate,
-            'ShipStartCode' : ShipStart,
-            'ShipUpdateCode' : ShipUpdate
-        }
+        code : cringeTeam
     },
     'champion2' : {
         id : "80b",
         name: "Bob",
-        code : {
-            'BaseStartCode' : BaseStart,
-            'BaseUpdateCode' : BaseUpdate,
-            'ShipStartCode' : ShipStart,
-            'ShipUpdateCode' : ShipUpdate
-        }
+        code : basedTeam
     }
 }

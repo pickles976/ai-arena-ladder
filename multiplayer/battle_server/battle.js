@@ -1,11 +1,7 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
+import { createGame } from './game.js';
 
-let results = {
-  winner: 2,
-  stats: {
-    joe : "momma"
-  }
-}
+let jobData = null
 
 let options = {
     host: "localhost",
@@ -17,6 +13,7 @@ const c = new Client(options);
 // connect to beasntalkd server
 await c.connect();
 
+// Acquire a game and run it if possible
 async function tryAcquireGame() {
 
   // use our own tube
@@ -36,39 +33,44 @@ async function tryAcquireGame() {
 
   if (job) {
 
-    /*
-      ...do some important job
-    */
+    jobData = job.payload
 
-    await c.delete(job.id);
+    let data = {
+      team0: job.payload["champion1"]["code"],
+      team1: job.payload["champion2"]["code"]
+    }
+
+    /*
+      ...Run the game with callbacks
+    */
+    await createGame(data, async (res) => {
+      let results = jobData
+      results.winner = res.winner
+      results.score = res.score
+      await c.delete(job.id);
+      await sendResult(results) // send result to Campaign queue
+      await tryAcquireGame() // Loop
+    })
   }
 
 }
 
+// If any valid game results exist, send those to the results tube
 async function sendResult(result) {
-
-  if (result) {
 
     await c.use('results')
 
     // put our very important job
-    const putJob = await c.put(results, 40);
+    const putJob = await c.put(result, 40);
 
     if (putJob.state !== BeanstalkJobState.ready) {
       // as a result of put command job can done in `buried` state,
       // or `delayed` in case delay or client's default delay been specified
       throw new Error('job is not in ready state');
     }
-
-  }
 }
 
-async function loop() {
-  await tryAcquireGame()
-  // await sendResult()
-  loop()
-}
-
-await loop()
+//
+await tryAcquireGame()
 
 // c.disconnect();

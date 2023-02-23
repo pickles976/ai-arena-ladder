@@ -1,8 +1,7 @@
 {
     "type": "module",
     "dependencies": {
-        "ai-arena": "^1.0.17",
-        "ai-arena-map": "^1.0.1",
+        "ai-arena": "^1.0.18",
         "node-beanstalk": "^1.6.8",
         "uuid": "^9.0.0",
         "ws": "^8.8.1"

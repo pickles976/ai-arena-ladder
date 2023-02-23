@@ -1,16 +1,41 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
 import { data } from './json.js';
+import { Galaxy, GALAXY_PARAMS } from 'ai-arena-map'
 
 const MAX_QUEUE = 5
 let currentBattle = null
+
+let galaxy = null
+let championsList = []
+let users = []
 
 let options = {
     host: "localhost",
     port: "11300"
 }
 
+function initializeGame() {
+
+    // Create Galaxy
+    galaxy = new Galaxy(GALAXY_PARAMS)
+
+    // Get champions
+
+    // Get users
+
+    // Add users to Galaxy
+    galaxy.setUsers(users)
+
+    // Save Galaxy + Stars off to db
+
+}
+
 async function gameStep() {
+
+    // For each star in the galaxy
+
     // Make some decision
+    // TODO: stuff
 
     // Get the battle if it exists
     currentBattle = data
@@ -29,23 +54,25 @@ async function enqueueBattle() {
     console.log(`Was able to enqueue battle: ${currentBattle.id}? ${didEnqueue}`)
 
     if (didEnqueue) {
+        await checkQueue()
         gameStep()
     } else {
         // Trying again in 1s
         console.log("Trying again in 1s")
-        setTimeout(enqueueBattle, 1000)
+        await setTimeout(enqueueBattle, 1000)
     }
 
 }
 
 /**
- * 
+ * Attempts to enqueue a battle if the queue isn't full. 
+ * Returns true or false
  * @param {*} battleData 
  * @returns 
  */
 async function tryEnqueueBattle(battleData) {
 
-    // use our own tube
+    // Use the Games tube
     await c.use('games')
     let stats = await c.statsTube('games')
 
@@ -69,7 +96,7 @@ async function tryEnqueueBattle(battleData) {
 }
 
 /**
- * 
+ * Check the queue for results objects and update if the exist
  */
 async function checkQueue() {
 
@@ -80,12 +107,21 @@ async function checkQueue() {
     await c.watch('results')
 
     // acquire new job
-    const job = await c.reserveWithTimeout(20);
+    const job = await c.reserveWithTimeout(1);
 
-    // Do something with this job
-    console.log(job)
+    if (job) {
 
-    c.delete(job.id)
+        // Determine who won
+        console.log(job)
+
+        if (job.winner) {
+            // Do something with the winner
+        } else {
+            // Declare the higher k/d as the winner
+        }
+
+        c.delete(job.id)
+    }
 }
 
 // connect to beasntalkd server

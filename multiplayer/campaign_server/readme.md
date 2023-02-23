@@ -9,7 +9,7 @@ If a battle is completed, the Campaign server will resolve that battle on the ma
 The Campaign server makes sure that there are no more than 10 items in the queue at any given time.
 
 ## TODO:
-- [ ] Add 2-way communication with Beanstalkd
+- [x] Add 2-way communication with Beanstalkd
 - [ ] Add Galaxy generation with bogus data
 - [ ] Set up coin flip on battle server + game outcome resolution
 - [ ] Add db interaction to Campaign server
