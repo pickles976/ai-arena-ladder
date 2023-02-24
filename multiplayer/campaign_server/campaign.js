@@ -1,12 +1,17 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
 import { data } from './json.js';
-import { Galaxy, GALAXY_PARAMS } from 'ai-arena-map'
+// import { GalaxyData, GALAXY_PARAMS } from "ai-arena-map-headless"
+import { getAllChampions } from './supabaseClient.js';
+import seedrandom from 'seedrandom';
+
+seedrandom(1234)
+
 
 const MAX_QUEUE = 5
 let currentBattle = null
 
 let galaxy = null
-let championsList = []
+let championsList = {}
 let users = []
 
 let options = {
@@ -14,16 +19,27 @@ let options = {
     port: "11300"
 }
 
-function initializeGame() {
+// https://app.supabase.com/project/kbnorlxawefgklyeofdm/api
+
+async function initializeGame() {
 
     // Create Galaxy
-    galaxy = new Galaxy(GALAXY_PARAMS)
+    galaxy = new GalaxyData(GALAXY_PARAMS)
+
+    console.log(galaxy)
 
     // Get champions
+    let champions = await getAllChampions()
+    console.log(champions)
 
-    // Get users
+    // Get users from champions
+
+    // Create { user_id : Object[Champion] } dict
+
+    // Create { user_id : Object[User] } dict
 
     // Add users to Galaxy
+    // User(id, name, color)
     galaxy.setUsers(users)
 
     // Save Galaxy + Stars off to db
@@ -128,6 +144,8 @@ async function checkQueue() {
 const c = new Client(options);
 await c.connect();
 
-gameStep()
+// gameStep()
+
+initializeGame()
 
 // c.disconnect();

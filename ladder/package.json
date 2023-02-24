@@ -1,9 +1,0 @@
-{
-    "type": "module",
-    "dependencies": {
-      "ai-arena": "^1.0.17",
-      "uuid": "^9.0.0",
-      "ws": "^8.8.1"
-    }
-  }
-  
