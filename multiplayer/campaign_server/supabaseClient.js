@@ -46,3 +46,17 @@ export async function createStars(stars) {
   .select()
   return data
 }
+
+export async function updateStars(stars) {
+  const { data, error } = await supabase
+  .from('star_systems')
+  .insert([{ some_column: 'someValue' }], { upsert: true })
+}
+
+export async function updateChampions(champions) {
+  const { data, error } = await supabase
+  .from('champion')
+  .upsert(champions)
+  .select()
+  // console.log(data, error)
+}

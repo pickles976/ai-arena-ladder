@@ -1,7 +1,7 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
 import { data } from './json.js';
 import { GalaxyData, GALAXY_PARAMS, UserData } from "ai-arena-map-headless"
-import { createWar, createStars, getAllChampions, getAllCode, getAllUsers } from './supabaseClient.js';
+import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions } from './supabaseClient.js';
 import seedrandom from 'seedrandom';
 import { shuffle } from './utils.js';
 
@@ -28,8 +28,7 @@ let championDict = {}
 let userList = []
 let codeList = []
 
-// Star DB keys
-let starKeyDict = {}
+let userStrength = {}
 
 let options = {
     host: "localhost",
@@ -72,38 +71,41 @@ async function initializeGame() {
     // User(id, name, color)
     galaxy.setUsers(userList)
 
-    // Save Galaxy off to DB
-    console.log('Saving Galaxy to DB')
-    let war = await createWar(NUM_STARS, SEED, champions.map((champ) => champ.id))
-    console.log(war)
+    // DB CRAP
 
-    // Save stars off to DB
-    console.log('Saving Stars to DB')
-    let starData = galaxy.stars.map((star) => { return {
-        'galactic_war': war[0].id, 
-        'champion' : championDict[star.owner?.uuid]?.id, 
-        'relative_id' : star.uuid
-    }})
+    // // Save Galaxy off to DB
+    // console.log('Saving Galaxy to DB')
+    // let war = await createWar(NUM_STARS, SEED, champions.map((champ) => champ.id))
+    // galaxy.id = war[0].id
 
-    starData = await createStars(starData)
+
+    // // Save stars off to DB
+    // console.log('Saving Stars to DB')
+    // let starData = galaxy.stars.map((star) => { return {
+    //     'galactic_war': galaxy.id, 
+    //     'champion' : championDict[star.owner?.uuid]?.id, 
+    //     'relative_id' : star.uuid
+    // }})
+
+    // starData = await createStars(starData)
     
-    // Store star DB ids for upsert later on
-    starData.forEach((star) => starKeyDict[star.relative_id] = star.id)
+    // // Store star DB ids for upsert later on
+    // starData.forEach((star) => starKeyDict[star.relative_id] = star.id)
 
     console.log(`Starting game`)
 
-    // await gameStep()
+    await gameStep()
 
 }
 
 async function gameStep() {
 
-    if (galaxyTurnCount < 200) {
+    if (galaxyTurnCount < 999) {
 
         if (starTurnCount < galaxy.stars.length) {
             let star = galaxy.stars[starTurnCount]
             starTurnCount++
-            await starTurn(star)
+            starTurn(star)
         } else {
 
             console.log(`${galaxyTurnCount},000 years of warfare have passed...`)
@@ -111,8 +113,26 @@ async function gameStep() {
             starTurnCount = 0
             galaxyTurnCount++
 
-            // TODO: tally up the people
+            // Tally up the people
+            userStrength = {}
 
+            galaxy.stars.forEach((star) => {
+                if (star.owner) {
+                    if (star.owner.uuid in userStrength) {
+                        userStrength[star.owner.uuid] += 1
+                    } else {
+                        userStrength[star.owner.uuid] = 1
+                    }
+                }
+            })
+
+            console.log(userStrength)
+
+            // End game if one user is left
+            if (Object.keys(userStrength).length <= 1) {
+                gameOver(Object.keys(userStrength)[0])
+                return
+            } 
 
             // shuffle stars 
             galaxy.stars = shuffle(galaxy.stars)
@@ -121,7 +141,8 @@ async function gameStep() {
         }
 
     } else {
-        console.log(galaxy.stars)
+        console.log('Game could not conclude')
+        // console.log(galaxy.stars)
     }
 
 }
@@ -138,7 +159,7 @@ async function starTurn(star) {
         let emptyStars = galaxy.getUnownedStarsInRange(star.uuid)
         let target
 
-        if (enemyStars.length > 0 && Math.random() > 0.25) {
+        if (enemyStars.length > 0 && Math.random()) {
 
             // Battle if an enemy is within range
             target = enemyStars[0]
@@ -147,9 +168,12 @@ async function starTurn(star) {
             await enqueueBattle()
             star.energy -= star.position.distance(target.position)
 
-        } else if (emptyStars.length > 0) {
+        }
+        else if (emptyStars.length > 0) {
             setTimeout(() => conquerStar(star, emptyStars[0]), EMPTY_TURN_DURATION)
-        } else {
+            return 
+        }
+        else {
             console.log(`No nearby stars to invade!`)
             gameStep()
         }
@@ -158,6 +182,21 @@ async function starTurn(star) {
         console.log(`Turn Skip`)
         gameStep()
     }
+
+}
+
+function gameOver(winner) {
+
+    console.log(`${userDict[winner]} has won the galactic war!`)
+
+    let championObjects = Object.values(championDict).map((champ) => {return {'id' : champ.id, 'wins' : champ.wins, 'losses' : champ.losses}})
+    console.log(championObjects)
+    updateChampions(championObjects)
+
+    // Update Galaxy
+
+    // Delete all stars with galaxy ID
+
 
 }
 
@@ -263,14 +302,17 @@ async function checkQueue() {
         let star = galaxy.starDict[payload.star_id]
 
         let winner
+        let loser 
 
         if (job.winner) {
 
             // Do something with the winner
             if (job.winner == 1) {
                 winner = payload.champion1
+                loser = payload.champion2
             } else {
                 winner = payload.champion2
+                loser = payload.champion1
             }
 
         } else {
@@ -278,8 +320,10 @@ async function checkQueue() {
             // Declare the least deaths as winner
             if (score['team 0'].deaths < score['team 1'].deaths) {
                 winner = payload.champion1
+                loser = payload.champion2
             } else {
                 winner = payload.champion2
+                loser = payload.champion1
             }
         }
         c.delete(job.id)
@@ -287,6 +331,9 @@ async function checkQueue() {
         if (winner) {
             console.log(`${userDict[winner.owner].name} defeated ${star.owner.name} at ${star.name}`)
             star.updateOwner(userDict[winner.owner])
+
+            Object.values(championDict).find((c) => c.id == winner.id).wins += 1
+            Object.values(championDict).find((c) => c.id == loser.id).losses += 1
         }
 
         // Do something with db
