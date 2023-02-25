@@ -1,18 +1,29 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
 import { data } from './json.js';
-// import { GalaxyData, GALAXY_PARAMS } from "ai-arena-map-headless"
-import { getAllChampions } from './supabaseClient.js';
+import { GalaxyData, GALAXY_PARAMS, UserData } from "ai-arena-map-headless"
+import { getAllChampions, getAllCode, getAllUsers } from './supabaseClient.js';
 import seedrandom from 'seedrandom';
 
-seedrandom(1234)
 
+let params = GALAXY_PARAMS
+params.numStars = 20
 
 const MAX_QUEUE = 5
 let currentBattle = null
 
+let starTurnCount = 0
+let galaxyTurnCount = 0
+
 let galaxy = null
-let championsList = {}
-let users = []
+
+// map user ids to UserData and code ids to code objects
+let userDict = {}
+let codeDict = {}
+
+// map user id's to champion objects
+let championDict = {}
+let userList = []
+let codeList = []
 
 let options = {
     host: "localhost",
@@ -23,42 +34,118 @@ let options = {
 
 async function initializeGame() {
 
-    // Create Galaxy
-    galaxy = new GalaxyData(GALAXY_PARAMS)
+    // Make all Math.random() deterministic
+    seedrandom(1234, { global: true });
 
-    console.log(galaxy)
+    // Create Galaxy
+    galaxy = new GalaxyData(params)
+
+    console.log(`Galaxy contains: ${galaxy.stars.length} star systems`)
 
     // Get champions
     let champions = await getAllChampions()
-    console.log(champions)
 
-    // Get users from champions
+    // Create dict of userids -> Champions
+    champions.forEach((champion) => championDict[champion.owner] = champion)
 
-    // Create { user_id : Object[Champion] } dict
+    // Get user ids from champions, store in a dict
+    userList = Object.keys(championDict)
+    userList = await getAllUsers(userList)
+    userList.forEach((user) => userDict[user.id] = new UserData(user.id, user.username, championDict[user.id].color))
+    userList = Object.values(userDict)
 
-    // Create { user_id : Object[User] } dict
+    // Get code ids from champions, store in a dict
+    champions.forEach((champion) => codeList.push(champion.code))
+    codeList = await getAllCode(codeList)
+    codeList.forEach((code) => codeDict[code.id] = code.code)
+
+    // Inject code strings into champion objects
+    Object.values(championDict).forEach((champion) => champion.code = codeDict[champion.code])
 
     // Add users to Galaxy
     // User(id, name, color)
-    galaxy.setUsers(users)
+    galaxy.setUsers(userList)
 
-    // Save Galaxy + Stars off to db
+    // TODO: Save Galaxy + Stars off to db
+
+    console.log(`Starting game`)
+    await gameStep()
 
 }
 
 async function gameStep() {
 
-    // For each star in the galaxy
+    if (galaxyTurnCount < 188) {
 
-    // Make some decision
-    // TODO: stuff
+        if (starTurnCount < galaxy.stars.length) {
+            let star = galaxy.stars[starTurnCount]
+            starTurnCount++
+            await starTurn(star)
+        } else {
+            starTurnCount = 0
+            galaxyTurnCount++
+            console.log(`${galaxyTurnCount},000 years of warfare have passed...`)
+            // TODO: tally up the people
+            gameStep()
+        }
 
-    // Get the battle if it exists
-    currentBattle = data
-    currentBattle.id = (Math.random() * 1000).toString()
+    } else {
+        console.log(galaxy.stars)
+    }
 
-    // Try to enqeue the battle
-    await enqueueBattle()
+}
+
+async function starTurn(star) {
+
+    if (star.owner) {
+
+        console.log(`Turn for star ${star.name} owned by ${star.owner.name}`)
+
+        star.update()
+
+        let enemyStars = galaxy.getEnemyStarsInRange(star.uuid)
+        let emptyStars = galaxy.getUnownedStarsInRange(star.uuid)
+        let target
+
+        // TODO: set the winner and print it out
+
+        if (enemyStars.length > 0) {
+
+            // Battle if an enemy is within range
+            target = enemyStars[0]
+            console.log(`${star.owner.name} is attacking ${target.owner.name} at: ${target.name}`)
+            currentBattle = createBattleMessage(target.uuid, star.owner.uuid, target.owner.uuid)
+            await enqueueBattle()
+            star.energy -= star.position.distance(target.position)
+
+        } else if (emptyStars.length > 0) {
+
+            // Just conquer the nearest star
+            target = emptyStars[0]
+            target.updateOwner(star.owner)
+            console.log(`${star.owner.name} has conquered ${target.name}`)
+            star.energy -= star.position.distance(target.position)
+            gameStep()
+
+        } else {
+            console.log(`No nearby stars to invade!`)
+            gameStep()
+        }
+
+    } else {
+        console.log(`Star unowned`)
+        gameStep()
+    }
+
+}
+
+function createBattleMessage(star, attacker, defender) {
+    return {
+        'id' : '0',
+        'star_id' : star,
+        'champion1' : championDict[attacker],
+        'champion2' : championDict[defender]
+    }
 
 }
 
@@ -130,10 +217,28 @@ async function checkQueue() {
         // Determine who won
         console.log(job)
 
+        let payload = job.payload
+        let star = galaxy.starDict[payload.star_id]
+
         if (job.winner) {
+
             // Do something with the winner
+            if (job.winner == 1) {
+                star.owner.updateOwner(userDict[payload.champion1.owner])
+            } else {
+                star.owner.updateOwner(userDict[payload.champion2.owner])
+            }
+
         } else {
-            // Declare the higher k/d as the winner
+
+            let score = JSON.parse(payload.score)
+
+            // Declare the least deaths as winner
+            if (score['team 0'].deaths < score['team 1'].deaths) {
+                star.updateOwner(userDict[payload.champion1.owner])
+            } else {
+                star.updateOwner(userDict[payload.champion2.owner])
+            }
         }
 
         c.delete(job.id)
@@ -146,6 +251,6 @@ await c.connect();
 
 // gameStep()
 
-initializeGame()
+await initializeGame()
 
 // c.disconnect();

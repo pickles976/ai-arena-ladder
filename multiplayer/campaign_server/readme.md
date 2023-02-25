@@ -13,3 +13,6 @@ The Campaign server makes sure that there are no more than 10 items in the queue
 - [ ] Add Galaxy generation with bogus data
 - [ ] Set up coin flip on battle server + game outcome resolution
 - [ ] Add db interaction to Campaign server
+
+// need this to resolve node modules
+--es-module-specifier-resolution=node

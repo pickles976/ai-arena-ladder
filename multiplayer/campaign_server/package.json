@@ -3,9 +3,9 @@
     "dependencies": {
         "@supabase/supabase-js": "^2.8.0",
         "ai-arena": "^1.0.17",
-        "ai-arena-map-headless": "^1.0.3",
+        "ai-arena-map-headless": "^1.0.7",
         "node-beanstalk": "^1.6.8",
-        "seedrandom": "^3.0.5",
+        "seedrandom": "3.0.5",
         "three": "^0.150.0",
         "uuid": "^9.0.0",
         "ws": "^8.8.1"
