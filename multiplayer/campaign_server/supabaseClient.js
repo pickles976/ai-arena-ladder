@@ -28,3 +28,21 @@ export async function getAllUsers(user_ids) {
     .in('id', user_ids)
   return users
 }
+
+export async function createWar(numStars, seed, champions) {
+  const { data, error } = await supabase
+  .from('galactic_war')
+  .insert([
+    { 'num_systems': numStars, 'seed': seed, 'champions': champions },
+  ])
+  .select()
+  return data
+}
+
+export async function createStars(stars) { 
+  const { data, error } = await supabase
+  .from('star_systems')
+  .insert(stars)
+  .select()
+  return data
+}

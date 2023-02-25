@@ -47,8 +47,9 @@ function gameEndCallback(team){
 
 function startGameWithParams(data){
 
-  console.log(`Starting game with params: ${JSON.stringify(data)}`)
-//   console.log("Starting new game.")
+  console.log(`Starting game with params:`)
+  console.log(data)
+  
   start = performance.now()
   i = 1
 

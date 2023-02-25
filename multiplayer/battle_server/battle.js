@@ -36,8 +36,8 @@ async function tryAcquireGame() {
     jobData = job.payload
 
     let data = {
-      team0: job.payload["champion1"]["code"],
-      team1: job.payload["champion2"]["code"]
+      'team0': job.payload["champion1"]["code"],
+      'team1': job.payload["champion2"]["code"]
     }
 
     /*
