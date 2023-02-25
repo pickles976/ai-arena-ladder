@@ -50,7 +50,7 @@ export async function createStars(stars) {
 export async function updateStars(stars) {
   const { data, error } = await supabase
   .from('star_systems')
-  .insert([{ some_column: 'someValue' }], { upsert: true })
+  .upsert(stars)
 }
 
 export async function updateChampions(champions) {
@@ -59,4 +59,17 @@ export async function updateChampions(champions) {
   .upsert(champions)
   .select()
   // console.log(data, error)
+}
+
+export async function updateGalaxy(galaxy) {
+  const { data, error } = await supabase
+  .from('galactic_war')
+  .upsert(galaxy)
+}
+
+export async function deleteAllStars(galaxy_id) {
+  const { data, error } = await supabase
+  .from('star_systems')
+  .delete()
+  .eq('galactic_war', galaxy_id)
 }

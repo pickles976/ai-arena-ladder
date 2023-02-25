@@ -1,11 +1,11 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
 import { data } from './json.js';
 import { GalaxyData, GALAXY_PARAMS, UserData } from "ai-arena-map-headless"
-import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions } from './supabaseClient.js';
+import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions, updateStars, updateGalaxy, deleteAllStars } from './supabaseClient.js';
 import seedrandom from 'seedrandom';
 import { shuffle } from './utils.js';
 
-const EMPTY_TURN_DURATION = 500
+const EMPTY_TURN_DURATION = 1000
 
 const NUM_STARS = 20
 const SEED = 1234
@@ -29,6 +29,8 @@ let userList = []
 let codeList = []
 
 let userStrength = {}
+
+let starKeyDict = {}
 
 let options = {
     host: "localhost",
@@ -73,29 +75,37 @@ async function initializeGame() {
 
     // DB CRAP
 
-    // // Save Galaxy off to DB
-    // console.log('Saving Galaxy to DB')
-    // let war = await createWar(NUM_STARS, SEED, champions.map((champ) => champ.id))
-    // galaxy.id = war[0].id
+    // Save Galaxy off to DB
+    console.log('Saving Galaxy to DB')
+    let war = await createWar(NUM_STARS, SEED, champions.map((champ) => champ.id))
+    galaxy.id = war[0].id
 
 
-    // // Save stars off to DB
-    // console.log('Saving Stars to DB')
-    // let starData = galaxy.stars.map((star) => { return {
-    //     'galactic_war': galaxy.id, 
-    //     'champion' : championDict[star.owner?.uuid]?.id, 
-    //     'relative_id' : star.uuid
-    // }})
+    // Save stars off to DB
+    console.log('Saving Stars to DB')
+    let starData = galaxy.stars.map((star) => { return {
+        'galactic_war': galaxy.id, 
+        'champion' : championDict[star.owner?.uuid]?.id, 
+        'relative_id' : star.uuid
+    }})
 
-    // starData = await createStars(starData)
+    starData = await createStars(starData)
     
-    // // Store star DB ids for upsert later on
-    // starData.forEach((star) => starKeyDict[star.relative_id] = star.id)
+    // Store star DB ids for upsert later on
+    starData.forEach((star) => starKeyDict[star.relative_id] = star.id)
 
     console.log(`Starting game`)
 
     await gameStep()
 
+}
+
+async function updateStarOwner(star, champion) {
+    let starDbData = {
+        'id' : starKeyDict[star.uuid], 'champion' : champion.id
+    }
+
+    await updateStars([starDbData])
 }
 
 async function gameStep() {
@@ -119,7 +129,7 @@ async function gameStep() {
             galaxy.stars.forEach((star) => {
                 if (star.owner) {
                     if (star.owner.uuid in userStrength) {
-                        userStrength[star.owner.uuid] += 1
+                        userStrength[star.owner.uuid] = userStrength[star.owner.uuid] + 1
                     } else {
                         userStrength[star.owner.uuid] = 1
                     }
@@ -130,14 +140,16 @@ async function gameStep() {
 
             // End game if one user is left
             if (Object.keys(userStrength).length <= 1) {
-                gameOver(Object.keys(userStrength)[0])
+                await gameOver(Object.keys(userStrength)[0])
+
+                // TODO: Clear out state and restart game?
                 return
             } 
 
             // shuffle stars 
             galaxy.stars = shuffle(galaxy.stars)
 
-            gameStep()
+            return gameStep()
         }
 
     } else {
@@ -149,7 +161,7 @@ async function gameStep() {
 
 async function starTurn(star) {
 
-    if (star.owner && Math.random() < 0.25) {
+    if (star.owner) {
 
         console.log(`Turn for star ${star.name} owned by ${star.owner.name}`)
 
@@ -159,7 +171,11 @@ async function starTurn(star) {
         let emptyStars = galaxy.getUnownedStarsInRange(star.uuid)
         let target
 
-        if (enemyStars.length > 0 && Math.random()) {
+        if (emptyStars.length > 0) {
+            console.log(`${star.owner.name} has conquered ${emptyStars[0].name}`)
+            return setTimeout(() => conquerStar(star, emptyStars[0]), EMPTY_TURN_DURATION)
+        }
+        else if (enemyStars.length > 0 && Math.random() < 0.1) {
 
             // Battle if an enemy is within range
             target = enemyStars[0]
@@ -169,23 +185,19 @@ async function starTurn(star) {
             star.energy -= star.position.distance(target.position)
 
         }
-        else if (emptyStars.length > 0) {
-            setTimeout(() => conquerStar(star, emptyStars[0]), EMPTY_TURN_DURATION)
-            return 
-        }
         else {
             console.log(`No nearby stars to invade!`)
-            gameStep()
+            return gameStep()
         }
 
     } else {
         console.log(`Turn Skip`)
-        gameStep()
+        return gameStep()
     }
 
 }
 
-function gameOver(winner) {
+async function gameOver(winner) {
 
     console.log(`${userDict[winner]} has won the galactic war!`)
 
@@ -194,17 +206,18 @@ function gameOver(winner) {
     updateChampions(championObjects)
 
     // Update Galaxy
+    await updateGalaxy({ 'id' : galaxy.id, 'winner' : userDict[winner].id, 'completed_at' : ((new Date()).toISOString()).toLocaleString('zh-TW')})
 
     // Delete all stars with galaxy ID
-
+    await deleteAllStars(galaxy.id)
 
 }
 
-function conquerStar(star, target) {
+async function conquerStar(star, target) {
     target.updateOwner(star.owner)
-    console.log(`${star.owner.name} has conquered ${target.name}`)
     star.energy -= star.position.distance(target.position)
-    gameStep()
+    await updateStarOwner(target, championDict[star.owner.uuid])
+    return gameStep()
 }
 
 function prepareCode(code) {
@@ -238,7 +251,7 @@ async function enqueueBattle() {
 
     if (didEnqueue) {
         await checkQueue()
-        gameStep()
+        return gameStep()
     } else {
         // Trying again in 1s
         console.log("Trying again in 1s")
@@ -329,15 +342,18 @@ async function checkQueue() {
         c.delete(job.id)
 
         if (winner) {
-            console.log(`${userDict[winner.owner].name} defeated ${star.owner.name} at ${star.name}`)
+
+            // update star locally
+            console.log(`${userDict[winner.owner].name} defeated ${userDict[loser.owner].name} at ${star.name}`)
             star.updateOwner(userDict[winner.owner])
 
+            // update star in db
+            await updateStarOwner(star, winner)
+
+            // update scores
             Object.values(championDict).find((c) => c.id == winner.id).wins += 1
             Object.values(championDict).find((c) => c.id == loser.id).losses += 1
         }
-
-        // Do something with db
-        // TODO: Update star
     }
 }
 
@@ -349,4 +365,4 @@ await c.connect();
 
 await initializeGame()
 
-// c.disconnect();
+// c.disconnect()
