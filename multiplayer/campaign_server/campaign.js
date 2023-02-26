@@ -5,9 +5,9 @@ import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updat
 import seedrandom from 'seedrandom';
 import { shuffle } from './utils.js';
 
-const EMPTY_TURN_DURATION = 1000
+const EMPTY_TURN_DURATION = 500
 
-const NUM_STARS = 20
+const NUM_STARS = 5000
 const SEED = 1234
 
 const MAX_QUEUE = 5
@@ -115,7 +115,12 @@ async function gameStep() {
         if (starTurnCount < galaxy.stars.length) {
             let star = galaxy.stars[starTurnCount]
             starTurnCount++
-            starTurn(star)
+
+            if (star.owner) {
+                setTimeout(() => starTurn(star), 0)
+            } else {
+                gameStep()
+            }
         } else {
 
             console.log(`${galaxyTurnCount},000 years of warfare have passed...`)
@@ -161,8 +166,6 @@ async function gameStep() {
 
 async function starTurn(star) {
 
-    if (star.owner) {
-
         console.log(`Turn for star ${star.name} owned by ${star.owner.name}`)
 
         star.update()
@@ -183,19 +186,13 @@ async function starTurn(star) {
             currentBattle = createBattleMessage(target.uuid, star.owner.uuid, target.owner.uuid)
             await enqueueBattle()
             star.energy -= star.position.distance(target.position)
-
         }
         else {
             console.log(`No nearby stars to invade!`)
             return gameStep()
         }
 
-    } else {
-        console.log(`Turn Skip`)
-        return gameStep()
     }
-
-}
 
 async function gameOver(winner) {
 
@@ -216,6 +213,7 @@ async function gameOver(winner) {
 async function conquerStar(star, target) {
     target.updateOwner(star.owner)
     star.energy -= star.position.distance(target.position)
+    target.energy -= star.position.distance(target.position)
     await updateStarOwner(target, championDict[star.owner.uuid])
     return gameStep()
 }
