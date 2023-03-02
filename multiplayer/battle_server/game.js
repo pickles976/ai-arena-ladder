@@ -14,7 +14,7 @@ const MAX_GAME_TICKS = 9000 // 5-min realtime
 setEngineConfig({
   graphics: false,
   ticksPerFrame: TICKS_PER_FRAME,
-  framerate: 30,
+  framerate: 60,
   nodejs: true,
   userCodeTimeout: USER_CODE_TIMEOUT,
 })

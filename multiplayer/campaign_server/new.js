@@ -14,11 +14,7 @@ const MAX_QUEUE = 5
 let currentBattle = null
 let battleCount = 0
 
-let start = Date.now()
-
-let galaxyTurnCount = 0
-
-let starTurnCount = 0
+let didEnqueue = true
 
 let galaxy = null
 
@@ -40,7 +36,7 @@ let options = {
     port: "11300"
 }
 
-// https://app.supabase.com/project/kbnorlxawefgklyeofdm/api
+let turnQueue = []
 
 async function initializeGame() {
 
@@ -99,8 +95,47 @@ async function initializeGame() {
 
     console.log(`Starting game`)
 
-    await gameStep()
 
+    newTurn()
+
+}
+
+async function newTurn() {
+
+    // Queue up turns for all occupied stars
+    galaxy.stars.forEach((star) => {
+        if (star.owner) {
+            turnQueue.push(star)
+        }
+    })
+
+    // Shuffle stars in the galaxy
+    galaxy.stars = shuffle(galaxy.stars)
+
+    // Tally up remaining players
+    userStrength = {}
+
+    galaxy.stars.forEach((star) => {
+        if (star.owner) {
+            if (star.owner.uuid in userStrength) {
+                userStrength[star.owner.uuid] = userStrength[star.owner.uuid] + 1
+            } else {
+                userStrength[star.owner.uuid] = 1
+            }
+        }
+    })
+
+    console.log(userStrength)
+
+    // End game if one user is left
+    if (Object.keys(userStrength).length <= 1) {
+        await gameOver(Object.keys(userStrength)[0])
+
+        // TODO: Clear out state and restart game?
+        return
+    } 
+
+    queueConsumer()
 }
 
 async function updateStarOwner(star, champion) {
@@ -110,97 +145,6 @@ async function updateStarOwner(star, champion) {
 
     // await updateStars([starDbData])
 }
-
-async function gameStep() {
-
-    if (galaxyTurnCount > 30) {
-        console.log(Date.now() - start)
-        return
-    }
-
-    if (galaxyTurnCount < 999) {
-
-        if (starTurnCount < galaxy.stars.length) {
-            let star = galaxy.stars[starTurnCount]
-            starTurnCount++
-
-            if (star.owner) {
-                setTimeout(() => starTurn(star), 0)
-            } else {
-                gameStep()
-            }
-        } else {
-
-            console.log(`${galaxyTurnCount},000 years of warfare have passed...`)
-
-            starTurnCount = 0
-            galaxyTurnCount++
-
-            // Tally up the people
-            userStrength = {}
-
-            galaxy.stars.forEach((star) => {
-                if (star.owner) {
-                    if (star.owner.uuid in userStrength) {
-                        userStrength[star.owner.uuid] = userStrength[star.owner.uuid] + 1
-                    } else {
-                        userStrength[star.owner.uuid] = 1
-                    }
-                }
-            })
-
-            console.log(userStrength)
-
-            // End game if one user is left
-            if (Object.keys(userStrength).length <= 1) {
-                await gameOver(Object.keys(userStrength)[0])
-
-                // TODO: Clear out state and restart game?
-                return
-            } 
-
-            // shuffle stars 
-            galaxy.stars = shuffle(galaxy.stars)
-
-            return gameStep()
-        }
-
-    } else {
-        console.log('Game could not conclude')
-        // console.log(galaxy.stars)
-    }
-
-}
-
-async function starTurn(star) {
-
-        console.log(`Turn for star ${star.name} owned by ${star.owner.name}`)
-
-        star.update()
-
-        let enemyStars = galaxy.getEnemyStarsInRange(star.uuid)
-        let emptyStars = galaxy.getUnownedStarsInRange(star.uuid)
-        let target
-
-        if (emptyStars.length > 0) {
-            console.log(`${star.owner.name} has conquered ${emptyStars[0].name}`)
-            return setTimeout(() => conquerStar(star, emptyStars[0]), EMPTY_TURN_DURATION)
-        }
-        else if (enemyStars.length > 0 && Math.random() < 0.1) {
-
-            // Battle if an enemy is within range
-            target = enemyStars[0]
-            console.log(`${star.owner.name} is attacking ${target.owner.name} at: ${target.name}`)
-            currentBattle = createBattleMessage(target.uuid, star.owner.uuid, target.owner.uuid)
-            await enqueueBattle()
-            star.energy -= star.position.distance(target.position)
-        }
-        else {
-            console.log(`No nearby stars to invade!`)
-            return gameStep()
-        }
-
-    }
 
 async function gameOver(winner) {
 
@@ -218,12 +162,54 @@ async function gameOver(winner) {
 
 }
 
+async function queueConsumer(){
+
+    if (turnQueue.length <= 0) {
+        newTurn()
+        return
+    }
+
+    // If active queue is not full
+    if (didEnqueue) { 
+        await starTurn(turnQueue.pop())
+    }
+
+    setTimeout(queueConsumer, 0)
+}
+
+async function starTurn(star) {
+
+    console.log(`Turn for star ${star.name} owned by ${star.owner.name}`)
+    star.update()
+    star.update()
+
+    let enemyStars = galaxy.getEnemyStarsInRange(star.uuid)
+    let emptyStars = galaxy.getUnownedStarsInRange(star.uuid)
+    let target
+
+    if (enemyStars.length > 0) {
+
+        // Battle if an enemy is within range
+        target = enemyStars[0]
+        console.log(`${star.owner.name} is attacking ${target.owner.name} at: ${target.name}`)
+        currentBattle = createBattleMessage(target.uuid, star.owner.uuid, target.owner.uuid)
+        await enqueueBattle()
+        star.energy -= star.position.distance(target.position)
+    }
+    else if (emptyStars.length > 0) {
+        console.log(`${star.owner.name} has conquered ${emptyStars[0].name}`)
+        return await setTimeout(() => conquerStar(star, emptyStars[0]), EMPTY_TURN_DURATION)
+    }
+    else {
+        console.log(`No nearby stars to invade!`)
+    }
+}
+
 async function conquerStar(star, target) {
     target.updateOwner(star.owner)
     star.energy -= star.position.distance(target.position)
     target.energy -= star.position.distance(target.position)
     await updateStarOwner(target, championDict[star.owner.uuid])
-    return gameStep()
 }
 
 function prepareCode(code) {
@@ -251,13 +237,13 @@ function createBattleMessage(star, attacker, defender) {
 async function enqueueBattle() {
 
     // Check if we were able to add the battle to the queue
-    let didEnqueue = await tryEnqueueBattle(currentBattle)
+    didEnqueue = await tryEnqueueBattle(currentBattle)
 
     console.log(`Was able to enqueue battle: ${currentBattle.id}? ${didEnqueue}`)
 
     if (didEnqueue) {
         await checkQueue()
-        return gameStep()
+        return
     } else {
         // Trying again in 1s
         console.log("Trying again in 1s")
@@ -367,8 +353,4 @@ async function checkQueue() {
 const c = new Client(options);
 await c.connect();
 
-// gameStep()
-
 await initializeGame()
-
-// c.disconnect()

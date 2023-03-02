@@ -50,15 +50,13 @@ async function tryAcquireGame() {
         results.score = res.score
         await c.delete(job.id);
         await sendResult(results) // send result to Campaign queue
+        setTimeout(tryAcquireGame, 0)
       })
     } catch(e) {
       console.log(e)
+      setTimeout(tryAcquireGame, 0)
     }
   }
-    
-  setTimeout(tryAcquireGame, 0)
-
-
 }
 
 // If any valid game results exist, send those to the results tube
@@ -78,5 +76,3 @@ async function sendResult(result) {
 
 //
 await tryAcquireGame()
-
-// c.disconnect();
