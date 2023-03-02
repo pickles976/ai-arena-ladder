@@ -5,7 +5,7 @@ import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updat
 import seedrandom from 'seedrandom';
 import { shuffle } from './utils.js';
 
-const EMPTY_TURN_DURATION = 500
+const EMPTY_TURN_DURATION = 250
 
 const NUM_STARS = 5000
 const SEED = 1234
