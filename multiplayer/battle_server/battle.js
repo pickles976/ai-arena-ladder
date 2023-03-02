@@ -43,15 +43,21 @@ async function tryAcquireGame() {
     /*
       ...Run the game with callbacks
     */
-    await createGame(data, async (res) => {
-      let results = jobData
-      results.winner = res.winner
-      results.score = res.score
-      await c.delete(job.id);
-      await sendResult(results) // send result to Campaign queue
-      await tryAcquireGame() // Loop
-    })
+    try {
+      await createGame(data, async (res) => {
+        let results = jobData
+        results.winner = res.winner
+        results.score = res.score
+        await c.delete(job.id);
+        await sendResult(results) // send result to Campaign queue
+      })
+    } catch(e) {
+      console.log(e)
+    }
   }
+    
+  setTimeout(tryAcquireGame, 0)
+
 
 }
 

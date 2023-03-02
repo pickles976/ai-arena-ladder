@@ -4,6 +4,7 @@ import { GalaxyData, GALAXY_PARAMS, UserData } from "ai-arena-map-headless"
 import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions, updateStars, updateGalaxy, deleteAllStars } from './supabaseClient.js';
 import seedrandom from 'seedrandom';
 import { shuffle } from './utils.js';
+import { sanitizeCode } from './sanitizeCode.js';
 
 const EMPTY_TURN_DURATION = 250
 
@@ -75,24 +76,24 @@ async function initializeGame() {
 
     // DB CRAP
 
-    // Save Galaxy off to DB
-    console.log('Saving Galaxy to DB')
-    let war = await createWar(NUM_STARS, SEED, champions.map((champ) => champ.id))
-    galaxy.id = war[0].id
+    // // Save Galaxy off to DB
+    // console.log('Saving Galaxy to DB')
+    // let war = await createWar(NUM_STARS, SEED, champions.map((champ) => champ.id))
+    // galaxy.id = war[0].id
 
 
-    // Save stars off to DB
-    console.log('Saving Stars to DB')
-    let starData = galaxy.stars.map((star) => { return {
-        'galactic_war': galaxy.id, 
-        'champion' : championDict[star.owner?.uuid]?.id, 
-        'relative_id' : star.uuid
-    }})
+    // // Save stars off to DB
+    // console.log('Saving Stars to DB')
+    // let starData = galaxy.stars.map((star) => { return {
+    //     'galactic_war': galaxy.id, 
+    //     'champion' : championDict[star.owner?.uuid]?.id, 
+    //     'relative_id' : star.uuid
+    // }})
 
-    starData = await createStars(starData)
+    // starData = await createStars(starData)
     
-    // Store star DB ids for upsert later on
-    starData.forEach((star) => starKeyDict[star.relative_id] = star.id)
+    // // Store star DB ids for upsert later on
+    // starData.forEach((star) => starKeyDict[star.relative_id] = star.id)
 
     console.log(`Starting game`)
 
@@ -101,11 +102,11 @@ async function initializeGame() {
 }
 
 async function updateStarOwner(star, champion) {
-    let starDbData = {
-        'id' : starKeyDict[star.uuid], 'champion' : champion.id
-    }
+    // let starDbData = {
+    //     'id' : starKeyDict[star.uuid], 'champion' : champion.id
+    // }
 
-    await updateStars([starDbData])
+    // await updateStars([starDbData])
 }
 
 async function gameStep() {
@@ -221,10 +222,10 @@ async function conquerStar(star, target) {
 function prepareCode(code) {
 
     return {
-        'BaseStartCode' : code.baseStart,
-        'BaseUpdateCode' : code.baseUpdate,
-        'ShipStartCode' : code.shipStart,
-        'ShipUpdateCode' : code.shipUpdate
+        baseStart : sanitizeCode(code.baseStart),
+        baseUpdate : sanitizeCode(code.baseUpdate),
+        shipStart : sanitizeCode(code.shipStart),
+        shipUpdate : sanitizeCode(code.shipUpdate)
     }
 
 }

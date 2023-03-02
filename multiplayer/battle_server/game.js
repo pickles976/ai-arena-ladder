@@ -1,4 +1,5 @@
-import { runGame,testPackage,stopGame, setConfig, setCallbacks, getScore, setUserCode  } from "ai-arena"
+import { runGame,testPackage,stopGame, setEngineConfig, setCallbacks, getScore, setUserCode  } from "ai-arena"
+import { ErrorCallback } from "ai-arena/dist/globals";
 
 global.alert = function(x){ 
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
@@ -10,7 +11,7 @@ let TICKS_PER_FRAME = 64
 export const USER_CODE_TIMEOUT = 1.0
 const MAX_GAME_TICKS = 9000 // 5-min realtime
 
-setConfig({
+setEngineConfig({
   graphics: false,
   ticksPerFrame: TICKS_PER_FRAME,
   framerate: 30,
@@ -29,6 +30,10 @@ let physCallback = function(){
     if(i > MAX_GAME_TICKS){
       gameEndCallback()
     }
+}
+
+let errorCallback = function(e){
+  console.log(e)
 }
 
 function gameEndCallback(team){
@@ -57,7 +62,8 @@ function startGameWithParams(data){
 
   setCallbacks({
     'physics': physCallback,
-    'gameEnd': gameEndCallback
+    'gameEnd': gameEndCallback,
+    'error' : errorCallback
   })
 
   runGame()
