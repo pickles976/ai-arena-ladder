@@ -1,8 +1,7 @@
 import { GALAXY_PARAMS, GalaxyData, UserData } from 'ai-arena-map-headless';
 import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions, updateStars, updateGalaxy, deleteAllStars } from './supabaseClient.js';
 import seedrandom from 'seedrandom';
-import { sanitizeCode } from './sanitizeCode.js';
-import { shuffle } from './utils.js';
+import { prepareCode, shuffle } from './utils.js';
 
 const NUM_STARS = 5000
 
@@ -142,15 +141,16 @@ export class War {
     
     }
 
-}
+    getChampFromID(id) {
+        return this.championDict[id]
+    }
 
-function prepareCode(code) {
+    getStarFromID(id) {
+        return this.galaxy.starDict[id]
+    }
 
-    return {
-        baseStart : sanitizeCode(code.baseStart),
-        baseUpdate : sanitizeCode(code.baseUpdate),
-        shipStart : sanitizeCode(code.shipStart),
-        shipUpdate : sanitizeCode(code.shipUpdate)
+    getUserFromID(id) {
+        return this.userDict[id]
     }
 
 }

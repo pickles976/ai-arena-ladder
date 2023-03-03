@@ -3,13 +3,9 @@ import { GalaxyData, GALAXY_PARAMS, UserData } from "ai-arena-map-headless"
 import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions, updateStars, updateGalaxy, deleteAllStars } from './supabaseClient.js';
 import seedrandom from 'seedrandom';
 import { shuffle } from './utils.js';
-import { sanitizeCode } from './sanitizeCode.js';
 import { War } from './war.js';
-import { EMPTY_TURN_DURATION } from './config.js';
+import { EMPTY_TURN_DURATION, MAX_QUEUE, SEED } from './config.js';
 
-const SEED = 1234
-
-const MAX_QUEUE = 5
 let currentBattle = null
 let battleCount = 0
 
@@ -109,7 +105,7 @@ async function conquerStar(star, target) {
     target.updateOwner(star.owner)
     star.energy -= star.position.distance(target.position)
     target.energy -= star.position.distance(target.position)
-    await war.updateStarOwner(target, war.championDict[star.owner.uuid])
+    await war.updateStarOwner(target, war.getChampFromID(star.owner.uuid))
 }
 
 function createBattleMessage(star, attacker, defender) {
@@ -117,10 +113,9 @@ function createBattleMessage(star, attacker, defender) {
     return {
         'id' : `${battleCount}`,
         'star_id' : star,
-        'champion1' : championDict[attacker],
-        'champion2' : championDict[defender]
+        'champion1' : war.getChampFromID(attacker),
+        'champion2' : war.getChampFromID(defender)
     }
-
 }
 
 async function enqueueBattle() {
@@ -187,13 +182,14 @@ async function checkQueue() {
     // acquire new job
     const job = await c.reserveWithTimeout(1);
 
+    // TODO: move this shit into state management
     if (job) {
 
         // Determine who won
         console.log(job)
 
         let payload = job.payload
-        let star = war.galaxy.starDict[payload.star_id]
+        let star = war.getStarFromID(payload.star_id)
 
         let winner
         let loser 
@@ -225,11 +221,11 @@ async function checkQueue() {
         if (winner) {
 
             // update star locally
-            console.log(`${war.userDict[winner.owner].name} defeated ${war.userDict[loser.owner].name} at ${star.name}`)
-            star.updateOwner(war.userDict[winner.owner])
+            console.log(`${war.getUserFromID(winner.owner).name} defeated ${war.userDict[loser.owner].name} at ${star.name}`)
+            star.updateOwner(war.getUserFromID(winner.owner))
 
             // update star in db
-            await updateStarOwner(star, winner)
+            await war.updateStarOwner(star, winner)
 
             // update scores
             Object.values(war.championDict).find((c) => c.id == winner.id).wins += 1
