@@ -17,9 +17,15 @@ export class War {
     userList = []
     codeList = []
     
-    starKeyDict = {}
+    champions = []
 
-    constructor() {
+    starKeyDict = {}
+    
+    seed = null
+
+    constructor(seed) {
+        this.seed = seed
+        seedrandom(seed, { global: true });
         this.galaxy = new GalaxyData(NUM_STARS, GALAXY_PARAMS)
     }
 
@@ -56,27 +62,6 @@ export class War {
         // Add users to Galaxy
         // User(id, name, color)
         this.galaxy.setUsers(userList)
-
-        // DB CRAP
-
-        // // Save Galaxy off to DB
-        // console.log('Saving Galaxy to DB')
-        // let war = await createWar(NUM_STARS, SEED, champions.map((champ) => champ.id))
-        // galaxy.id = war[0].id
-
-
-        // // Save stars off to DB
-        // console.log('Saving Stars to DB')
-        // let starData = galaxy.stars.map((star) => { return {
-        //     'galactic_war': galaxy.id, 
-        //     'champion' : championDict[star.owner?.uuid]?.id, 
-        //     'relative_id' : star.uuid
-        // }})
-
-        // starData = await createStars(starData)
-        
-        // // Store star DB ids for upsert later on
-        // starData.forEach((star) => starKeyDict[star.relative_id] = star.id)
         
         this.userDict = userDict
         this.codeDict = codeDict
@@ -84,7 +69,30 @@ export class War {
         this.userList = userList
         this.codeList = codeList
         this.starKeyDict = starKeyDict
+        this.champions = champions
     
+    }
+
+    async initDB() {
+
+        // Save Galaxy off to DB
+        console.log('Saving Galaxy to DB')
+        let war = await createWar(NUM_STARS, this.seed, this.champions.map((champ) => champ.id))
+        this.galaxy.id = war[0].id
+
+
+        // Save stars off to DB
+        console.log('Saving Stars to DB')
+        let starData = this.galaxy.stars.map((star) => { return {
+            'galactic_war': this.galaxy.id, 
+            'champion' : this.championDict[star.owner?.uuid]?.id, 
+            'relative_id' : star.uuid
+        }})
+
+        starData = await createStars(starData)
+        
+        // Store star DB ids for upsert later on
+        starData.forEach((star) => this.starKeyDict[star.relative_id] = star.id)
     }
 
     shuffleStars() {
