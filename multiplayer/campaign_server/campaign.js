@@ -14,22 +14,9 @@ const MAX_QUEUE = 5
 let currentBattle = null
 let battleCount = 0
 
-let start = Date.now()
-
 let galaxyTurnCount = 0
 
 let starTurnCount = 0
-
-let galaxy = null
-
-// map user ids to UserData and code ids to code objects
-let userDict = {}
-let codeDict = {}
-
-// map user id's to champion objects
-let championDict = {}
-let userList = []
-let codeList = []
 
 let userStrength = {}
 
