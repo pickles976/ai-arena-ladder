@@ -1,15 +1,16 @@
-import { runGame, testPackage, stopGame, setUserCode, setConfig, setCallbacks} from "ai-arena"
+import { runGame, testPackage, stopGame, setUserCode, setEngineConfig, setCallbacks} from "ai-arena"
 import { sanitizeCode } from './sanitizeCode.js'
 import { FRAMERATE, TICKS_PER_FRAME, USER_CODE_TIMEOUT } from "./globals.js"
 import axios from 'axios';
 
 const TIMEOUT = 1500
 let status = 'failure'
+let error = ''
 let steps = 0
 let elapsed = 0
 
 // TODO: move these to env, too lazy rn
-let supabaseURL = "https://kbnorlxawefgklyeofdm.supabase.co/rest/v1/TacticalCode"
+let supabaseURL = "https://kbnorlxawefgklyeofdm.supabase.co/rest/v1/battle_code"
 let supabaseAuth = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtibm9ybHhhd2VmZ2tseWVvZmRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzY1Njg2MTUsImV4cCI6MTk5MjE0NDYxNX0.uzdXwAq2i5eL35cBdmHtqEywiKg-2IGBzcuq5gfYLVM"
 
 let headers = {
@@ -28,12 +29,19 @@ var gameEndCallback = function(value){
     runGame()
 }
 
+let errorCallback = function(value) {
+    console.log(value)
+    error = value
+    stopGame()
+}
+
 var addData = function(response){
     response.body = JSON.stringify({
       message: {
         status,
         elapsed,
-        steps
+        steps,
+        error
       }
     })
     return response
@@ -92,7 +100,7 @@ export const handler = (event, context, callback) => {
     console.log(testPackage())
 
     // Configure game
-    setConfig({
+    setEngineConfig({
         graphics: false,
         ticksPerFrame: TICKS_PER_FRAME,
         framerate: FRAMERATE,
@@ -102,16 +110,17 @@ export const handler = (event, context, callback) => {
 
     setUserCode({
         team0 : {
-            BaseStartCode : sanitizeCode(event.code.baseStart),
-            BaseUpdateCode : sanitizeCode(event.code.baseUpdate),
-            ShipStartCode : sanitizeCode(event.code.shipStart),
-            ShipUpdateCode : sanitizeCode(event.code.shipUpdate)
+            baseStart : sanitizeCode(event.code.baseStart),
+            baseUpdate : sanitizeCode(event.code.baseUpdate),
+            shipStart : sanitizeCode(event.code.shipStart),
+            shipUpdate : sanitizeCode(event.code.shipUpdate)
         }
     })
 
     setCallbacks({
         'physics': physCallback,
         'gameEnd': gameEndCallback,
+        'error' : errorCallback
     })
 
     let start = performance.now()

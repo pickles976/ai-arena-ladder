@@ -4,7 +4,7 @@ import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updat
 import seedrandom from 'seedrandom';
 import { shuffle } from './utils.js';
 import { War } from './war.js';
-import { EMPTY_TURN_DURATION, MAX_QUEUE, SEED } from './config.js';
+import { EMPTY_TURN_DURATION, MAX_QUEUE, MAX_TTR, SEED } from './config.js';
 
 let currentBattle = null
 let battleCount = 0
@@ -25,7 +25,7 @@ async function initializeGame() {
 
     war = new War(SEED)
     await war.initialize()
-    // await war.initDB()
+    await war.initDB()
     
     console.log(`Starting game`)
     newTurn()
@@ -47,8 +47,7 @@ async function newTurn() {
         await gameOver(Object.keys(userStrength)[0])
 
         // Clear out state and restart game
-        war = await new War()
-        return
+        return initializeGame()
     } 
 
     queueConsumer()
@@ -152,7 +151,7 @@ async function tryEnqueueBattle(battleData) {
     if (stats['current-jobs-ready'] < MAX_QUEUE) {
 
         // put our very important job
-        const putJob = await c.put(battleData, 40);
+        const putJob = await c.put(battleData, MAX_TTR);
 
         if (putJob.state !== BeanstalkJobState.ready) {
             // as a result of put command job can done in `buried` state,

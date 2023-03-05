@@ -14,7 +14,7 @@ const MAX_GAME_TICKS = 9000 // 5-min realtime
 setEngineConfig({
   graphics: false,
   ticksPerFrame: TICKS_PER_FRAME,
-  framerate: 60,
+  framerate: 30,
   nodejs: true,
   userCodeTimeout: USER_CODE_TIMEOUT,
 })
@@ -66,7 +66,12 @@ function startGameWithParams(data){
     'error' : errorCallback
   })
 
-  runGame()
+  try {
+    runGame()
+  }
+  catch (e) {
+    console.log(e)
+  }
 }
 
 export async function createGame(data, callback) {

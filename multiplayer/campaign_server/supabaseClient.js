@@ -15,7 +15,7 @@ export async function getAllChampions() {
 
 export async function getAllCode(code_ids) {
   let { data: code, error } = await supabase
-    .from('TacticalCode')
+    .from('battle_code')
     .select('*')
     .in('id', code_ids)
   return code
