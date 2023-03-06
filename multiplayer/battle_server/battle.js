@@ -6,7 +6,8 @@ let jobData = null
 let windows = process.env.IS_WINDOWS
 
 let options = {
-    host: windows ? "host.docker.internal" : "localhost",
+    host: windows ? "host.docker.internal" : process.env.DROPLET_IP,
+    // host: "157.230.2.211",
     port: "11300"
 }
 

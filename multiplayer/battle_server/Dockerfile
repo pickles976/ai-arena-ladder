@@ -8,4 +8,4 @@ RUN npm install
 
 COPY battle.js sanitizeCode.js aiControls.js ./
 
-CMD [ "node", "battle.js" ]
+CMD [ "node", "--es-module-specifier-resolution=node", "battle.js" ]
