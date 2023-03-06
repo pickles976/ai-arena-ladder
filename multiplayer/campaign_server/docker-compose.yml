@@ -10,5 +10,6 @@ services:
     build: .
     environment: 
       - SUPABASE_SECRET_KEY
+      - DROPLET_IP
     depends_on:
       - game-queue
