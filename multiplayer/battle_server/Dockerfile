@@ -6,6 +6,6 @@ COPY package.json ./
 
 RUN npm install
 
-COPY battle.js sanitizeCode.js aiControls.js ./
+COPY battle.js game.js ./
 
 CMD [ "node", "--es-module-specifier-resolution=node", "battle.js" ]
