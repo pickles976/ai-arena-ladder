@@ -17,7 +17,7 @@ let war = null
 let windows = process.env.IS_WINDOWS
 
 let options = {
-    host: windows ? "host.docker.internal" : "0.0.0.0",
+    host: windows ? "host.docker.internal" : "game-queue://game-queue",
     port: "11300"
 }
 

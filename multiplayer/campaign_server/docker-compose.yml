@@ -2,6 +2,8 @@ version: "3.9"
 services:
   game-queue: 
     image: schickling/beanstalkd
+    expose: 
+      - "11300"
     ports: 
       - "11300:11300"
   campaign-server:
