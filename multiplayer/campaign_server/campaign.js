@@ -17,7 +17,7 @@ let war = null
 let windows = process.env.IS_WINDOWS
 
 let options = {
-    host: windows ? "host.docker.internal" : "localhost",
+    host: windows ? "host.docker.internal" : "0.0.0.0",
     port: "11300"
 }
 
