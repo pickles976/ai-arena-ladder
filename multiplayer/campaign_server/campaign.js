@@ -15,7 +15,7 @@ let didEnqueue = true
 let war = null
 
 let options = {
-    host: "localhost",
+    host: "host.docker.internal",
     port: "11300"
 }
 
@@ -23,8 +23,11 @@ let turnQueue = []
 
 async function initializeGame() {
 
+    console.log("Creating war object...")
     war = new War(SEED)
+    console.log("Initializing war object...")
     await war.initialize()
+    console.log("Initializing db...")
     await war.initDB()
     
     console.log(`Starting game`)

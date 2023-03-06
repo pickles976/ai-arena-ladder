@@ -27,7 +27,7 @@ async function tryAcquireGame() {
   await c.watch('games')
 
   // acquire new job
-  const job = await c.reserveWithTimeout(10);
+  const job = await c.reserveWithTimeout(5);
 
   console.log(job)
 
@@ -56,6 +56,8 @@ async function tryAcquireGame() {
       console.log(e)
       setTimeout(tryAcquireGame, 0)
     }
+  } else {
+    setTimeout(tryAcquireGame, 0)
   }
 }
 

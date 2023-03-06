@@ -2,8 +2,7 @@ import { GALAXY_PARAMS, GalaxyData, UserData } from 'ai-arena-map-headless';
 import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions, updateStars, updateGalaxy, deleteAllStars } from './supabaseClient.js';
 import seedrandom from 'seedrandom';
 import { prepareCode, shuffle } from './utils.js';
-
-const NUM_STARS = 5000
+import { NUM_STARS } from './config.js';
 
 export class War {
 

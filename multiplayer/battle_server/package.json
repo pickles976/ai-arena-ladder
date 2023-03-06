@@ -1,7 +1,10 @@
 {
     "type": "module",
+    "scripts" : {
+        "run" : "node --es-module-specifier-resolution=node ./battle.js"
+    },
     "dependencies": {
-        "ai-arena": "^1.0.22",
+        "ai-arena": "^1.0.24",
         "node-beanstalk": "^1.6.8",
         "uuid": "^9.0.0",
         "ws": "^8.8.1"

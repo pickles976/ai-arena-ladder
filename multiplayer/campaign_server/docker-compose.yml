@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  game-queue: 
+    image: schickling/beanstalkd
+    ports: 
+      - "11300:11300"
+  campaign-server:
+    build: .
+    environment: 
+      - SUPABASE_SECRET_KEY
+    depends_on:
+      - game-queue

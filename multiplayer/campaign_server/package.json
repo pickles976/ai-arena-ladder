@@ -1,12 +1,16 @@
 {
-    "type": "module",
+    "type": "module",    
+    "scripts" : {
+        "run" : "node --es-module-specifier-resolution=node ./campaign.js"
+    },
     "dependencies": {
         "@supabase/supabase-js": "^2.8.0",
-        "ai-arena-map-headless": "^1.0.9",
+        "ai-arena-map-headless": "^1.0.10",
         "node-beanstalk": "^1.6.8",
         "seedrandom": "3.0.5",
         "three": "^0.150.0",
         "uuid": "^9.0.0",
-        "ws": "^8.8.1"
+        "ws": "^8.8.1",
+        "esprima": "^4.0.1"
     }
 }
