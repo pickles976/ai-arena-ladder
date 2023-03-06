@@ -1,8 +1,4 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
-import { GalaxyData, GALAXY_PARAMS, UserData } from "ai-arena-map-headless"
-import { createWar, createStars, getAllChampions, getAllCode, getAllUsers, updateChampions, updateStars, updateGalaxy, deleteAllStars } from './supabaseClient.js';
-import seedrandom from 'seedrandom';
-import { shuffle } from './utils.js';
 import { War } from './war.js';
 import { EMPTY_TURN_DURATION, MAX_QUEUE, MAX_TTR, SEED } from './config.js';
 
@@ -17,7 +13,7 @@ let war = null
 let windows = process.env.IS_WINDOWS
 
 let options = {
-    host: windows ? "host.docker.internal" : "game-queue://game-queue",
+    host: windows ? "host.docker.internal" : process.env.DROPLET_IP,
     port: "11300"
 }
 
