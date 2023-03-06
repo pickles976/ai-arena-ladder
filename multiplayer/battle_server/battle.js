@@ -3,8 +3,10 @@ import { createGame } from './game.js';
 
 let jobData = null
 
+let windows = process.env.IS_WINDOWS
+
 let options = {
-    host: "localhost",
+    host: windows ? "host.docker.internal" : "localhost",
     port: "11300"
 }
 

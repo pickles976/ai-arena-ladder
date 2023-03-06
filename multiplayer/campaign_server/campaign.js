@@ -14,8 +14,10 @@ let userStrength = {}
 let didEnqueue = true
 let war = null
 
+let windows = process.env.IS_WINDOWS
+
 let options = {
-    host: "host.docker.internal",
+    host: windows ? "host.docker.internal" : "localhost",
     port: "11300"
 }
 
