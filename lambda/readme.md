@@ -16,17 +16,9 @@ http://localhost:9000/2015-03-31/functions/function/invocations
 ### Deploy:
     ./deploy.ps1  
 
-
-
 ### Changing and Deploying
 1. Modify code
 2. Deploy locally with Docker
 3. Test with Postman
 4. Deploy to Lambda
 5. Test with Postman in Lambda
-
-## TODO:
-- [x] Test Lambda works
-- [ ] Sanitize user code
-- [ ] Return status update to requester
-- [ ] Send sanitized code to DB on user's behalf
