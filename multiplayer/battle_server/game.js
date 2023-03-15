@@ -5,12 +5,8 @@ global.alert = function(x){
     x === 'undefined' ? console.error('undefined') : console.error(x); return; 
 }; 
 
-console.log(testPackage())
-
 console.log("Monkey patching console. console.log will not print.")
-global.console = {
-  log : (x) => {}
-}
+console.log = (x) => {}
 
 let TICKS_PER_FRAME = 64
 export const USER_CODE_TIMEOUT = 1.0
