@@ -7,6 +7,11 @@ global.alert = function(x){
 
 console.log(testPackage())
 
+console.log("Monkey patching console. console.log will not print.")
+global.console = {
+  log : (x) => {}
+}
+
 let TICKS_PER_FRAME = 64
 export const USER_CODE_TIMEOUT = 1.0
 const MAX_GAME_TICKS = 9000 // 5-min realtime
