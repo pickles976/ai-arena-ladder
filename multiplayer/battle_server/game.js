@@ -1,12 +1,4 @@
 import { runGame,testPackage,stopGame, setEngineConfig, setCallbacks, getScore, setUserCode  } from "ai-arena"
-import { ErrorCallback } from "ai-arena/dist/globals";
-
-global.alert = function(x){ 
-    x === 'undefined' ? console.error('undefined') : console.error(x); return; 
-}; 
-
-console.log("Monkey patching console. console.log will not print.")
-console.log = (x) => {}
 
 let TICKS_PER_FRAME = 64
 export const USER_CODE_TIMEOUT = 1.0
@@ -34,7 +26,7 @@ let physCallback = function(){
 }
 
 let errorCallback = function(e){
-  console.log(e)
+  console.error(e)
 }
 
 function gameEndCallback(team){
@@ -71,7 +63,9 @@ function startGameWithParams(data){
     runGame()
   }
   catch (e) {
-    console.log(e)
+    console.error("Game crashed")
+    console.error(e)
+    gameEndCallback()
   }
 }
 

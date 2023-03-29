@@ -10,10 +10,10 @@ let userStrength = {}
 let didEnqueue = true
 let war = null
 
-let windows = process.env.IS_WINDOWS
+let self_ip = process.env.DROPLET_IP;
 
 let options = {
-    host: windows ? "host.docker.internal" : process.env.DROPLET_IP,
+    host: self_ip ? self_ip : "host.docker.internal",
     port: "11300"
 }
 
@@ -25,8 +25,9 @@ async function initializeGame() {
     war = new War(SEED)
     console.log("Initializing war object...")
     await war.initialize()
-    console.log("Initializing db...")
-    await war.initDB()
+
+    // console.log("Initializing db...")
+    // await war.initDB()
     
     console.log(`Starting game`)
     newTurn()

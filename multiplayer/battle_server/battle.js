@@ -1,12 +1,21 @@
 import { Client, BeanstalkJobState} from 'node-beanstalk';
 import { createGame } from './game.js';
 
+// Monkey patch calls
+global.alert = function(x){ 
+  x === 'undefined' ? console.error('undefined') : console.error(x); return; 
+}; 
+
+console.log("Monkey patching console. console.log will not print.")
+console.print = console.log
+console.log = (x) => {}
+
 let jobData = null
 
-let windows = process.env.IS_WINDOWS
+let campaign_ip = process.env.DROPLET_IP
 
 let options = {
-    host: windows ? "host.docker.internal" : process.env.DROPLET_IP,
+    host: campaign_ip ? campaign_ip : "host.docker.internal",
     // host: "157.230.2.211",
     port: "11300"
 }
@@ -32,7 +41,7 @@ async function tryAcquireGame() {
   // acquire new job
   const job = await c.reserveWithTimeout(5);
 
-  console.log(job)
+  console.print(`Running job ${job.id} ${new Date()}`)
 
   if (job) {
 
