@@ -24,8 +24,6 @@ campaign server.
 graph LR;
     GameServer-->|GameState|Ladder;
     Ladder-->|GameParams|GameServer;
-    API-->|GameState|Client_0;
-    API-->|GameState|Client_1;
     API-->|GameInfo|Ladder;
 ```
 
