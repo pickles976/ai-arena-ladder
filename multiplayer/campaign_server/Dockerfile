@@ -1,5 +1,7 @@
 FROM node:16-buster-slim
 
+RUN apk add g++ make py3-pip
+
 WORKDIR /usr/app
 
 COPY package.json ./
