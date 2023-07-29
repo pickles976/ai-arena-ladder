@@ -1,6 +1,6 @@
 FROM node:16-buster-slim
 
-RUN apk add g++ make py3-pip
+RUN apt-get update && apt-get install python3
 
 WORKDIR /usr/app
 
