@@ -31,9 +31,9 @@ graph LR;
 
 The Raspberry pi is a constrained environment. Docker is too much overhead + too unreliable with my shitty wifi. The crappy wifi means that not every call to Supabase is going to make it through. Game state info needs to be held locally until a successful post request to the DB can be made.
 
-- [ ] Add documentation for how to get started on Raspberry Pi
-- [ ] Create a single bash script to run the campaign, beanstalk, and battle server
-- [ ] Make the connections to supabase more robust with exception handling and stuff
+- [x] Add documentation for how to get started on Raspberry Pi
+- [x] Create a single bash script to run the campaign, beanstalk, and battle server
+- [x] Make the connections to supabase more robust with exception handling and stuff
 
 ### Setup
 

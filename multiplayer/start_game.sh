@@ -1,5 +1,8 @@
 #!/bin/bash
 
+killall beanstalkd
+killall node
+
 echo "Starting Beanstalkd server..."
 beanstalkd -l localhost -p 11300
 
