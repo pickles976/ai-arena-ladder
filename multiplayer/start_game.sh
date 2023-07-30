@@ -3,6 +3,9 @@
 DROPLET_IP=$DROPLET_IP
 SUPABASE_SECRET_KEY=$SUPABASE_SECRET_KEY
 
+echo "$DROPLET_IP"
+echo "$SUPABASE_SECRET_KEY"
+
 killall beanstalkd
 killall node
 
