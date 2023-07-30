@@ -27,6 +27,44 @@ graph LR;
     API-->|GameInfo|Ladder;
 ```
 
+## Deploying to Raspberry PI
+
+The Raspberry pi is a constrained environment. Docker is too much overhead + too unreliable with my shitty wifi. The crappy wifi means that not every call to Supabase is going to make it through. Game state info needs to be held locally until a successful post request to the DB can be made.
+
+- [ ] Add documentation for how to get started on Raspberry Pi
+- [ ] Create a single bash script to run the campaign, beanstalk, and battle server
+- [ ] Make the connections to supabase more robust with exception handling and stuff
+
+### Setup
+
+```
+ export DROPLET_IP=localhost
+ export SUPABASE_SECRET_KEY=""
+```
+
+Download [Beanstalkd](https://beanstalkd.github.io/download.html)
+
+```
+sudo apt-get install beanstalkd
+```
+
+To test, run
+
+```
+beanstalkd -l localhost -p 11300
+```
+
+Make sure node v16 and npm are installed
+
+```
+curl -sSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+### Running
+Run w/ the bash script
+
+
 ## Deploying to DigitalOcean
 
 Deployment is currently manual
