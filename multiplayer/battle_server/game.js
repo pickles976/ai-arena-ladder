@@ -37,9 +37,16 @@ function gameEndCallback(team){
   console.log(`Player ${1 - team} lost!`)
   console.log(`Player ${team} won!`)
 
+  let score = {}
+  try {
+    score = getScore()
+  } catch (err) {
+    console.log(`Failed to get score: ${err}`)
+  }
+
   stopGame()
 
-  resultCallback({ "winner" : team, "score" : JSON.stringify(getScore()) })
+  resultCallback({ "winner" : team, "score" : JSON.stringify(score) })
 
 }
 
