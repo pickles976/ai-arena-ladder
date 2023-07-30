@@ -18,6 +18,9 @@ export class War {
     champions = []
 
     starKeyDict = {}
+
+    // all the stars we need to update
+    starUpdateBuffer = []
     
     seed = null
 
@@ -121,7 +124,16 @@ export class War {
         let starDbData = {
             'id' : this.starKeyDict[star.uuid], 'champion' : champion.id
         }
-        await updateStars([starDbData])
+        this.starUpdateBuffer.push(starDbData)
+
+        try {
+            await updateStars(this.starUpdateBuffer)
+        } catch (error) {
+            console.log(`Error: ${error.message}`)
+            return
+        }
+
+        this.starUpdateBuffer = []
     }
 
     async gameOver(winner) {

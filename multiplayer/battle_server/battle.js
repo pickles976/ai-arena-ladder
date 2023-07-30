@@ -41,9 +41,9 @@ async function tryAcquireGame() {
   // acquire new job
   const job = await c.reserveWithTimeout(5);
 
-  console.print(`Running job ${job.id} ${new Date()}`)
-
   if (job) {
+
+    console.print(`Running job ${job.id} ${new Date()}`)
 
     jobData = job.payload
 

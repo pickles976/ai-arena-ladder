@@ -51,6 +51,7 @@ export async function updateStars(stars) {
   const { data, error } = await supabase
   .from('star_systems')
   .upsert(stars)
+  if (error) throw error
 }
 
 export async function updateChampions(champions) {

@@ -26,8 +26,8 @@ async function initializeGame() {
     console.log("Initializing war object...")
     await war.initialize()
 
-    // console.log("Initializing db...")
-    // await war.initDB()
+    console.log("Initializing db...")
+    await war.initDB()
     
     console.log(`Starting game`)
     newTurn()
