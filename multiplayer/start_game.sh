@@ -1,5 +1,7 @@
 #!/bin/bash
 
+workers=1
+
 DROPLET_IP=$DROPLET_IP
 SUPABASE_SECRET_KEY=$SUPABASE_SECRET_KEY
 
@@ -18,7 +20,12 @@ node --es-module-specifier-resolution=node ./campaign_server/campaign.js &
 echo "Waiting for campaign server initialization..."
 sleep 5
 
-echo "Starting battle server..."
-node --es-module-specifier-resolution=node ./battle_server/battle.js &
+echo "Starting battle servers..."
+for n in {1..$workers}
+do
+    echo $n
+    node --es-module-specifier-resolution=node ./battle_server/battle.js &
+done
+
 
 echo "Done!"
