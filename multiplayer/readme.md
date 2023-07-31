@@ -22,9 +22,10 @@ campaign server.
 
 ```mermaid
 graph LR;
-    GameServer-->|GameState|Ladder;
-    Ladder-->|GameParams|GameServer;
-    API-->|GameInfo|Ladder;
+    Client Service-->|Battle Config|Beanstalkd;
+    Beanstalkd-->|Battle Config|Client Service;
+    Battle Service-->|Battle Result|Beanstalkd
+    Client Service-->|War Update|Supabase;
 ```
 
 ## Deploying to Raspberry PI
