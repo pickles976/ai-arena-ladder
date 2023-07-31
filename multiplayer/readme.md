@@ -22,10 +22,11 @@ campaign server.
 
 ```mermaid
 graph LR;
-    Client Service-->|Battle Config|Beanstalkd;
-    Beanstalkd-->|Battle Config|Client Service;
-    Battle Service-->|Battle Result|Beanstalkd
-    Client Service-->|War Update|Supabase;
+    CampaignService-->|1. Battle Config|Beanstalkd;
+    Beanstalkd-->|2. Battle Config|BattleService;
+    BattleService-->|3. Battle Result|Beanstalkd;
+    Beanstalkd-->|4. Battle Result|CampaignService;
+    CampaignService-->|5. War Update|Supabase;
 ```
 
 ## Deploying to Raspberry PI
