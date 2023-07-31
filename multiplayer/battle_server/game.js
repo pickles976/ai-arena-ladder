@@ -37,6 +37,8 @@ function gameEndCallback(team){
   console.log(`Player ${1 - team} lost!`)
   console.log(`Player ${team} won!`)
 
+  // Get the score BEFORE WE STOP THE GAME
+  // otherwise this will cause hella crashes
   let score = {}
   try {
     score = getScore()

@@ -34,6 +34,7 @@ The Raspberry pi is a constrained environment. Docker is too much overhead + too
 - [x] Add documentation for how to get started on Raspberry Pi
 - [x] Create a single bash script to run the campaign, beanstalk, and battle server
 - [x] Make the connections to supabase more robust with exception handling and stuff
+- [x] Fix the crashing bug
 
 ### Setup
 
